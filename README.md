@@ -43,10 +43,10 @@ SuperCV 利用 Tauri 和 Rust 构建，是一个剪切板增强工具。
 
 ## TODO
 
-- 🗒️ 快捷键配置
-- 🗒️ 支持多文件
-- 🗒️ 服务端同步功能
-- 🗒️ 支持查看更多剪切板内容
+- [ ] 快捷键配置
+- [ ] 支持多文件
+- [ ] 服务端同步功能
+- [ ] 支持查看更多剪切板内容
 - ....
 
 ## 开发指南
@@ -95,4 +95,4 @@ SuperCV 利用 Tauri 和 Rust 构建，是一个剪切板增强工具。
 
 - [ChurchTao/clipboard-rs](https://github.com/ChurchTao/clipboard-rs) :Cross-platform clipboard API (text | image | rich text | html | files | monitoring changes)
 - [tauri-apps/tauri](https://github.com/tauri-apps/tauri): Build smaller, faster, and more secure desktop applications with a web frontend.
-- [clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev): Continuation of Clash Verge - A Clash Meta GUI based on Tauri (Windows, MacOS, Linux)
+  - [clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev): Continuation of Clash Verge - A Clash Meta GUI based on Tauri (Windows, MacOS, Linux)

@@ -42,9 +42,9 @@ Other desktop platforms not tested
 
 ## TODO
 
-- 🗒️ Shortcut key configuration
-- 🗒️ Support for multiple files
-- 🗒️ Server-side synchronization feature
+- [ ] Shortcut key configuration
+- [ ] Support for multiple files
+- [ ] Server-side synchronization feature
 - ....
 
 ## Development Guide
