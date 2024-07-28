@@ -1,0 +1,12 @@
+pyyaml
+loguru
+pydantic
+requests
+decorator
+psycopg2-binary
+fastapi_pagination
+sqlalchemy==2.0
+fastapi[all]~=0.110
+python-magic
+minio
+-i https://pypi.mirrors.ustc.edu.cn/simple

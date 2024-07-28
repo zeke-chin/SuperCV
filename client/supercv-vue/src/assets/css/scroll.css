@@ -1,0 +1,38 @@
+/* 将所有滚动条设置为定制样式 */
+
+/* 滑动条宽高 */
+::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+  border-radius: 0px 0px 0px 0px;
+  border: 1px solid transparent;
+}
+
+/* 鼠标经过滚动条轨道 */
+/* ::-webkit-scrollbar-track:hover {
+  background: rgba(250, 250, 250, 0.5);
+  border: 1px solid #e4e7ed;
+  opacity: 1;
+} */
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(88, 206, 141, 0.7);
+  border-radius: 4px 4px 4px 4px;
+}
+
+/* 鼠标经过滚动条 */
+/* ::-webkit-scrollbar-thumb:hover {
+  background: #d0dfff;
+} */
+
+/* 鼠标激活滚动条 */
+/* ::-webkit-scrollbar-thumb:active {
+  background: #8aaeff;
+} */

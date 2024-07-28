@@ -1,0 +1,50 @@
+services:
+
+  py_server:
+    container_name: py_server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #    image: py_server
+    #    entrypoint: /bin/bash
+    tty: true
+    privileged: true
+    ports:
+      - "2880:8000"
+    volumes:
+      - .:/workspace
+    networks:
+      - HostClipboard
+
+  postgres:
+    container_name: postgres
+    image: docker.20010215.xyz/postgres:latest
+    volumes:
+      - ./server_data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: HostClipboard
+    ports:
+      - "2832:5432"
+    networks:
+      - HostClipboard
+
+  minio:
+    container_name: minio
+    image: docker.20010215.xyz/minio/minio:latest
+    volumes:
+      - ./server_data/minio:/data
+    environment:
+      - MINIO_ACCESS_KEY=minio_access_key
+      - MINIO_SECRET_KEY=minio_secret_key
+    ports:
+      - "2900:9000"
+      - "2901:9001"
+    command: server /data --console-address ":9001"
+    networks:
+      - HostClipboard
+
+networks:
+  HostClipboard:
+    driver: bridge
