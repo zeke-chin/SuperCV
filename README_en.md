@@ -45,7 +45,9 @@ Other desktop platforms not tested
 - [ ] Shortcut key configuration
 - [ ] Support for multiple files
 - [ ] Server-side synchronization feature
-- ....
+- [ ] View more clipboard content
+- [ ] ...
+
 
 ## Development Guide
 
