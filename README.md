@@ -29,7 +29,7 @@ SuperCV 利用 Tauri 和 Rust 构建，是一个剪切板增强工具。
 
 请到发布页面下载对应的安装包：[Release Page](https://github.com/Zeke-chin/SuperCV/releases)
 
-已验证支持桌面平台 Windows(x64), Linux(x64), MacOS (Intel/apple)
+已验证支持桌面平台 Windows (x64), Linux_X11 (x64), MacOS (Intel/apple)
 
 其他桌面平台 未测试
 
