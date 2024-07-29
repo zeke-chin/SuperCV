@@ -3,8 +3,8 @@ use std::cmp::PartialEq;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use chrono::{Datelike, DateTime};
 use chrono::offset::FixedOffset;
-use chrono::{DateTime, Datelike};
 use clipboard_rs::common::RustImage;
 use clipboard_rs::RustImageData;
 use log::debug;
