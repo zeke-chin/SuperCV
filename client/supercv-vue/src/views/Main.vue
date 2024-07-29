@@ -11,28 +11,15 @@ const selectedIndex = ref(-1)
 let isKeyboardSelection = ref(true)
 
 function openSettings() {
-    invoke("rs_invoke_open_settings");
+  invoke('rs_invoke_open_settings')
 }
-
-const filterPasteList = computed(() => {
-  return clipboardEntries.value.map(item => {
-    if (item.type === 0) {
-      return item
-    }
-    const fileName = item.content.split('/').pop()
-    return {
-      ...item,
-      content: fileName,
-    }
-  })
-})
 
 const displayContent = computed(() => {
   if (
     selectedIndex.value >= 0 &&
-    selectedIndex.value < filterPasteList.value.length
+    selectedIndex.value < clipboardEntries.value.length
   ) {
-    return filterPasteList.value[selectedIndex.value].content
+    return clipboardEntries.value[selectedIndex.value].content
   }
   return ''
 })
@@ -240,7 +227,7 @@ const hoverSettings = ref(false)
           :class="{
             'paste-content-item-selected': selectedIndex === index,
           }"
-          v-for="(item, index) in filterPasteList"
+          v-for="(item, index) in clipboardEntries"
           :key="item.id"
           @mouseover="
             () => {
