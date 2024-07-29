@@ -8,6 +8,7 @@ use std::sync::Arc;
 use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri::GlobalShortcutManager;
 use tauri::Manager;
+#[allow(unused_imports)]
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 use crate::clipboard_helper::{ClipboardHelper, rs_invoke_get_clipboards, rs_invoke_get_user_config, rs_invoke_open_settings, rs_invoke_search_clipboards, rs_invoke_set_clipboards, rs_invoke_set_user_config};

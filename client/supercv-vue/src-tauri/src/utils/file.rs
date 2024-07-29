@@ -18,13 +18,18 @@ pub fn format_size(size: usize) -> String {
     }
 }
 
-pub fn get_file_size(file_path: &String) -> String {
+pub fn get_file_size(file_path: &str) -> String {
     let size = match fs::metadata(file_path) {
         Ok(metadata) => metadata.len(),
         Err(e) => {
-            error!("Failed to get file size: {}, ", e);
+            error!("Failed to get file size: {}, path: {}", e, file_path);
             0
         }
     };
-    format_size(size as usize)
+    let size = format_size(size as usize);
+    if size.is_empty() {
+        "".to_string()
+    } else {
+        format!(" ({})", size)
+    }
 }
