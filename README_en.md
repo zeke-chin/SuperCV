@@ -42,12 +42,11 @@ Other desktop platforms not tested
 
 ## TODO
 
+- [x] Support for multiple files
 - [ ] Shortcut key configuration
-- [ ] Support for multiple files
 - [ ] Server-side synchronization feature
 - [ ] View more clipboard content
 - [ ] ...
-
 
 ## Development Guide
 

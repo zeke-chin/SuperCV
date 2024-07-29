@@ -72,9 +72,7 @@ impl ClipboardHandler for ClipboardHandle {
 
         match self.ctx.get_files() {
             Ok(file_urls) if !file_urls.is_empty() => {
-                for f_url in file_urls {
-                    content = self.new_file_content(f_url);
-                }
+                content = self.new_file_content(file_urls);
             }
             Ok(_) => {}
             Err(e) => {
@@ -89,7 +87,6 @@ impl ClipboardHandler for ClipboardHandle {
         };
         if content.is_none() {
             if let Ok(img) = self.ctx.get_image() {
-                // 假设可以直接从 img 对象获取尺寸
                 content = self.new_img_content(&img);
             } else if let Ok(text) = self.ctx.get_text() {
                 content = self.new_text_content(text);
