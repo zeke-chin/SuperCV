@@ -15,20 +15,18 @@ function openSettings() {
 }
 
 const displayContent = computed(() => {
-  if (
-    selectedIndex.value >= 0 &&
-    selectedIndex.value < clipboardEntries.value.length
-  ) {
-    return clipboardEntries.value[selectedIndex.value].content
+  if (selectedIndex.value >= 0 && selectedIndex.value < clipboardEntries.value.length) {
+    const item = clipboardEntries.value[selectedIndex.value]
+    if (item.type == 2) {
+      return item.path.replaceAll(', ', '\n')
+    }
+    return item.content
   }
   return ''
 })
 
 const selectedEntry = computed(() => {
-  if (
-    selectedIndex.value >= 0 &&
-    selectedIndex.value < clipboardEntries.value.length
-  ) {
+  if (selectedIndex.value >= 0 && selectedIndex.value < clipboardEntries.value.length) {
     return clipboardEntries.value[selectedIndex.value]
   }
   return null
@@ -59,9 +57,7 @@ async function getClipboardContent() {
 
 async function searchClipboard() {
   try {
-    clipboardEntries.value = await ClipboardHelper.searchClipboardEntries(
-      textInput.value
-    )
+    clipboardEntries.value = await ClipboardHelper.searchClipboardEntries(textInput.value)
     selectedIndex.value = -1 // Reset selection
   } catch (error) {
     console.error('Failed to search clipboard content:', error)
@@ -90,10 +86,7 @@ function handleKeydown(e: KeyboardEvent) {
     isKeyboardSelection.value = true
     if (e.key === 'ArrowUp' && selectedIndex.value > 0) {
       selectedIndex.value--
-    } else if (
-      e.key === 'ArrowDown' &&
-      selectedIndex.value < clipboardEntries.value.length - 1
-    ) {
+    } else if (e.key === 'ArrowDown' && selectedIndex.value < clipboardEntries.value.length - 1) {
       selectedIndex.value++
     }
   } else if (e.key === 'Enter' || ((e.metaKey || e.ctrlKey) && e.key === 'c')) {
@@ -156,10 +149,7 @@ watch(textInput, () => {
 })
 
 const selectedTimestamp = computed(() => {
-  if (
-    selectedIndex.value >= 0 &&
-    selectedIndex.value < clipboardEntries.value.length
-  ) {
+  if (selectedIndex.value >= 0 && selectedIndex.value < clipboardEntries.value.length) {
     return clipboardEntries.value[selectedIndex.value].timestamp
   }
   return null
@@ -307,12 +297,15 @@ const hoverSettings = ref(false)
   flex-direction: column;
   position: relative;
 }
+
 .main-light {
   color: #000;
 }
+
 .main-dark {
   color: #fff;
 }
+
 .paste-settings {
   position: absolute;
   right: 10px;
@@ -324,15 +317,19 @@ const hoverSettings = ref(false)
   border-radius: 5px;
   padding: 3px;
 }
+
 .paste-settings:hover {
   background-color: rgba(88, 206, 141, 0.7);
 }
+
 .paste-settings-icon {
   width: 25px;
 }
+
 .paste-filter {
   width: 100%;
 }
+
 .paste-filter-input {
   width: 100%;
   height: 30px;
@@ -344,6 +341,7 @@ const hoverSettings = ref(false)
   padding-left: 5px;
   font-size: 18px;
 }
+
 .paste-content {
   flex: 1;
   display: flex;
@@ -351,6 +349,7 @@ const hoverSettings = ref(false)
   column-gap: 10px;
   height: 0;
 }
+
 .paste-content-list {
   flex: 1;
   display: flex;
@@ -358,6 +357,7 @@ const hoverSettings = ref(false)
   row-gap: 5px;
   overflow-y: auto;
 }
+
 .paste-content-desc {
   flex: 1;
   display: flex;
@@ -400,9 +400,11 @@ const hoverSettings = ref(false)
   align-items: center;
   justify-content: center;
 }
+
 .timestamp-content-light {
   color: #3c3a3a;
 }
+
 .timestamp-content-dark {
   color: #fff;
 }
@@ -420,18 +422,22 @@ const hoverSettings = ref(false)
   column-gap: 5px;
   flex-shrink: 0;
 }
+
 .paste-content-item:hover {
   background: rgba(88, 206, 141, 0.7);
   color: #fff;
 }
+
 .paste-content-item-selected {
   background: rgba(88, 206, 141, 0.7);
   color: #fff;
 }
+
 .paste-item-icon {
   width: 20px;
   font-size: 15px;
 }
+
 .paste-item-text {
   flex: 1;
   white-space: nowrap;
@@ -439,6 +445,7 @@ const hoverSettings = ref(false)
   text-overflow: ellipsis;
   width: 0;
 }
+
 .paste-item-shortcut {
   width: 30px;
 }
