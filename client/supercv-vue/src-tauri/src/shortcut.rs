@@ -14,7 +14,7 @@ impl MainGlobalShortcut {
 		}
 	}
 
-	pub fn register(&self, app_handle: &AppHandle, new_shortcut: &str) -> Result<(), String> {
+	pub fn register(&self, app_handle: &AppHandle, new_shortcut: &str) -> Result<bool, String> {
 		let mut shortcut_manager = app_handle.global_shortcut_manager();
 		let mut current_shortcut = self.shortcut.lock().unwrap();
 
@@ -44,7 +44,7 @@ impl MainGlobalShortcut {
 		// 更新当前注册的快捷键
 		*current_shortcut = Some(new_shortcut.to_string());
 
-		Ok(())
+		Ok(true)
 	}
 }
 
@@ -54,6 +54,6 @@ pub fn rs_invoke_register_global_shortcut(
 	app_handle: AppHandle,
 	shortcut: String,
 	state: tauri::State<'_, MainGlobalShortcut>,
-) -> Result<(), String> {
+) -> Result<bool, String> {
 	state.register(&app_handle, &shortcut)
 }
