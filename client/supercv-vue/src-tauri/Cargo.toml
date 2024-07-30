@@ -54,7 +54,9 @@ deepsize = "0.2"
 image = "0.25.2"
 clipboard-rs = { git = "https://github.com/Zeke-chin/clipboard-rs" }
 twox-hash = "1.6.0"
-window-vibrancy = "0.4.0"
+window-vibrancy = "0.4"
+mac_address = "1.1.7"
+sysinfo = "0.30.13"
 
 
 [features]
