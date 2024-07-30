@@ -70,8 +70,10 @@ impl ClipboardHandler for ClipboardHandle {
     fn on_clipboard_change(&mut self) {
         let mut content = None;
 
+        let mut have_files = false;
         match self.ctx.get_files() {
             Ok(file_urls) if !file_urls.is_empty() => {
+                have_files = true;
                 content = self.new_file_content(file_urls);
             }
             Ok(_) => {}
@@ -85,7 +87,7 @@ impl ClipboardHandler for ClipboardHandle {
                 }
             }
         };
-        if content.is_none() {
+        if !have_files && content.is_none() {
             if let Ok(img) = self.ctx.get_image() {
                 content = self.new_img_content(&img);
             } else if let Ok(text) = self.ctx.get_text() {

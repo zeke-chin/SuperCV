@@ -8,6 +8,7 @@ use chrono::offset::FixedOffset;
 use clipboard_rs::common::RustImage;
 use clipboard_rs::RustImageData;
 use log::debug;
+use serde_json::json;
 use url::Url;
 
 use crate::core::clipboard::ClipboardHandle;
@@ -129,7 +130,8 @@ impl ClipboardHandle {
                 .iter()
                 .map(|url| {
                     let url = Url::parse(url).expect("Invalid URL");
-                    PathBuf::from(url.path())
+                    let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+                    PathBuf::from(decoded_path.as_ref())
                 })
                 .collect();
             let file_names: String = paths
@@ -137,13 +139,13 @@ impl ClipboardHandle {
                 .filter_map(|path| path.file_name().and_then(|name| name.to_str()))
                 .collect::<Vec<_>>()
                 .join(", ");
+            let path_strings: Vec<String> = paths.into_iter()
+                .filter_map(|path| path.to_str().map(String::from))
+                .collect();
             (
                 format!("{} Files: {}", file_urls.len(), file_names),
                 ContentType::File,
-                paths
-                    .iter()
-                    .filter_map(|path| path.to_str().map(String::from))
-                    .collect(),
+                json!(path_strings).to_string()
             )
         };
 
@@ -151,7 +153,7 @@ impl ClipboardHandle {
         if self.check_hash(&hash) {
             return None;
         }
-
+        self.last_hash = hash.clone();
         Some(PasteboardContent::new(
             text_content,
             content_type,

@@ -5,6 +5,7 @@ use clipboard_rs::{Clipboard, ClipboardContent, ClipboardContext, ClipboardWatch
 use log::{debug, error};
 use sea_orm::DatabaseConnection;
 use tokio::sync::Mutex;
+use serde_json::Value;
 
 use crate::core::clipboard::ClipboardHandle;
 use crate::db::connection::init_db_connection;
@@ -60,7 +61,7 @@ impl ClipboardHelper {
         let all_entries = time_it!(async {
             crud::host_clipboard::get_clipboards_by_type_list(&db_guard, None, Some(num), type_list)
         })
-        .await?;
+            .await?;
         Ok(all_entries)
     }
 
@@ -79,7 +80,7 @@ impl ClipboardHelper {
                 type_list,
             )
         })
-        .await?;
+            .await?;
         Ok(all_entries)
     }
 
@@ -87,7 +88,7 @@ impl ClipboardHelper {
     pub async fn set(&self, items: Vec<Model>) -> Result<(), String> {
         let first_type = items.first().map(|item| item.r#type);
 
-        // Ensure all items have the same type
+        // 确保所有项目具有相同的类型
         if !items.iter().all(|item| Some(item.r#type) == first_type) {
             return Err("All items must have the same type".into());
         }
@@ -96,7 +97,22 @@ impl ClipboardHelper {
         let clipboard_content: Vec<ClipboardContent> = match first_type {
             Some(0) => items.into_iter().map(|item| ClipboardContent::Text(item.content)).collect(),
             Some(1) | Some(2) => {
-                let paths: Vec<_> = items.into_iter().map(|item| item.path).collect();
+                let paths: Vec<String> = items.into_iter()
+                    .flat_map(|item| {
+                        if item.path.starts_with('[') && item.path.ends_with(']') {
+                            // 尝试解析 JSON 数组
+                            match serde_json::from_str::<Value>(&item.path) {
+                                Ok(Value::Array(arr)) => arr.into_iter()
+                                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                                    .collect::<Vec<String>>(),
+                                _ => vec![item.path], // 如果解析失败，将原始字符串作为单个元素
+                            }
+                        } else {
+                            // 如果不是 JSON 数组格式，就直接使用
+                            vec![item.path]
+                        }
+                    })
+                    .collect();
                 return self.ctx.set_files(paths)
                     .map_err(|e| {
                         error!("Error setting files: {}", e);
@@ -163,7 +179,7 @@ pub async fn rs_invoke_search_clipboards(
 pub async fn rs_invoke_set_clipboards(
     state: tauri::State<'_, Arc<ClipboardHelper>>,
     item: Model,
-) -> Result<bool, String>{
+) -> Result<bool, String> {
     match state.set_clipboard(item).await {
         Ok(_) => Ok(true),
         Err(e) => {
