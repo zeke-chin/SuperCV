@@ -28,7 +28,7 @@ Common questions refer to [FAQ](./docs/faq.md)
 
 Please go to the release page to download the corresponding installation package: [Release Page](https://github.com/Zeke-chin/SuperCV/releases)
 
-Confirmed support for desktop platforms Windows(x64), Linux(x64), MacOS (Intel/Apple)
+Confirmed support for desktop platforms Windows (x64), Linux_X11 (x64), MacOS (Intel/Apple)
 
 Other desktop platforms not tested
 
