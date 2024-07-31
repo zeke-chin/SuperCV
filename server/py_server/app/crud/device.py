@@ -9,13 +9,11 @@ def create_device(db: Session, item: schemas.CreateDevice):
     # 判断uuid是否已经存在
     if db.query(models.Device).filter(models.Device.uuid == item.uuid).first():
         raise Exception(409, f"device uuid={item.uuid} already exists")
-    if db.query(models.Device).filter(models.Device.name == item.name).first():
-        raise Exception(409, f"device name={item.name} already exists")
     if db.query(models.User).filter_by(id=item.user_id).first() is None:
         raise Exception(404, f"user_id={item.user_id} not exists")
 
     db_item = models.Device(**item.dict(), **{
-        "status": 1,
+        "status": 0,
         "created_at": time.time()
     })
 

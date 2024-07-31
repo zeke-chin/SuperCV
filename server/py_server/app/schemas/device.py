@@ -2,9 +2,8 @@ from pydantic import BaseModel
 
 
 class CreateDevice(BaseModel):
-    uuid: str
     name: str
-    icon: str = ""
+    uuid: str
     user_id: int
 
 
