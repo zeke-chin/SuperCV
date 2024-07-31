@@ -1,6 +1,13 @@
 from PIL import Image, ImageDraw
 import hashlib
 import random
+import io
+
+
+def generate_identicon_io(seed):
+    img = generate_identicon(seed)
+    return image_to_io(img)
+
 
 def generate_identicon(seed, size=128, block_size=10):
     # 创建一个空白图像
@@ -31,15 +38,29 @@ def generate_identicon(seed, size=128, block_size=10):
         for x in range(5):
             if pattern[y * 5 + x]:
                 color = color1 if (x + y) % 2 == 0 else color2
-                draw.rectangle([size - (x + 1) * block_size, y * block_size, size - x * block_size, (y + 1) * block_size], fill=color)
-                draw.rectangle([x * block_size, size - (y + 1) * block_size, (x + 1) * block_size, size - y * block_size], fill=color)
-                draw.rectangle([size - (x + 1) * block_size, size - (y + 1) * block_size, size - x * block_size, size - y * block_size], fill=color)
+                draw.rectangle(
+                    [size - (x + 1) * block_size, y * block_size, size - x * block_size, (y + 1) * block_size],
+                    fill=color)
+                draw.rectangle(
+                    [x * block_size, size - (y + 1) * block_size, (x + 1) * block_size, size - y * block_size],
+                    fill=color)
+                draw.rectangle([size - (x + 1) * block_size, size - (y + 1) * block_size, size - x * block_size,
+                                size - y * block_size], fill=color)
 
     return img
 
 
-if __name__ == '__main__':
+def image_to_io(img, format='PNG'):
+    # 创建一个 BytesIO 对象
+    img_io = io.BytesIO()
+    # 将图像保存到 BytesIO 对象
+    img.save(img_io, format=format)
+    # 将指针移动到开头
+    img_io.seek(0)
+    return img_io
 
+
+if __name__ == '__main__':
     # 生成 Identicon 并保存
     identicon = generate_identicon('ad132fc')
     identicon.save('identicon.png')
