@@ -1,4 +1,5 @@
 use crate::client::common::{ClientError, ClientUserTrait};
+use crate::client::models::clipboard::{ClipboardResp, CreateClipboard};
 use crate::client::models::device::{CreateDevice, DeviceResp, UpdateDevice};
 use crate::client::models::file::FileResp;
 use crate::client::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};
@@ -27,19 +28,12 @@ impl HttpClient {
 		}
 	}
 
-	async fn handle_response<T: for<'de> Deserialize<'de>>(
-		&self,
-		response: reqwest::Response,
-	) -> Result<T, ClientError> {
+	async fn handle_response<T: for<'de> Deserialize<'de>>(&self, response: reqwest::Response) -> Result<T, ClientError> {
 		let status = response.status();
-		let body = response
-			.text()
-			.await
-			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		let body = response.text().await.map_err(|e| ClientError::NetworkError(e.to_string()))?;
 
 		if status.is_success() {
-			let api_response: ApiResponse<T> =
-				serde_json::from_str(&body).map_err(|e| ClientError::SerializationError(e.to_string()))?;
+			let api_response: ApiResponse<T> = serde_json::from_str(&body).map_err(|e| ClientError::SerializationError(e.to_string()))?;
 
 			if api_response.code == 200 {
 				api_response.data.ok_or_else(|| ClientError::ApiError {
@@ -99,21 +93,6 @@ impl ClientUserTrait for HttpClient {
 		self.handle_response(response).await
 	}
 
-	async fn create_device(&self, create_device: CreateDevice) -> Result<DeviceResp, ClientError> {
-		todo!()
-	}
-
-	async fn update_device(&self, update_device: UpdateDevice) -> Result<DeviceResp, ClientError> {
-		todo!()
-	}
-
-	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<DeviceResp>, ClientError> {
-		todo!()
-	}
-
-	async fn delete_device(&self, device_id: i32) -> Result<bool, ClientError> {
-		todo!()
-	}
 	async fn upload_file(&self, user_id: i32, file_path: &str, file_name: &str) -> Result<FileResp, ClientError> {
 		let url = format!("{}/file/{}", self.base_url, user_id);
 
@@ -144,12 +123,7 @@ impl ClientUserTrait for HttpClient {
 	async fn get_file(&self, uri: &str) -> Result<Vec<u8>, ClientError> {
 		let url = format!("{}{}", self.base_url, uri);
 
-		let response = self
-			.client
-			.get(&url)
-			.send()
-			.await
-			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		let response = self.client.get(&url).send().await.map_err(|e| ClientError::NetworkError(e.to_string()))?;
 
 		if response.status().is_success() {
 			response
@@ -163,5 +137,44 @@ impl ClientUserTrait for HttpClient {
 				message: format!("Failed to get file: {}", response.status()),
 			})
 		}
+	}
+
+	async fn create_clipboard(&self, entity: CreateClipboard) -> Result<ClipboardResp, ClientError> {
+		let url = format!("{}/content", self.base_url);
+		let response = self
+			.client
+			.post(&url)
+			.json(&entity)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
+	}
+
+	async fn get_clipboards_by_id(&self, content_id: i32) -> Result<ClipboardResp, ClientError> {
+		let url = format!("{}/content/{}", self.base_url, content_id);
+		let response = self
+			.client
+			.get(&url)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
+	}
+
+	async fn create_device(&self, create_device: CreateDevice) -> Result<DeviceResp, ClientError> {
+		todo!()
+	}
+
+	async fn update_device(&self, update_device: UpdateDevice) -> Result<DeviceResp, ClientError> {
+		todo!()
+	}
+
+	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<DeviceResp>, ClientError> {
+		todo!()
+	}
+
+	async fn delete_device(&self, device_id: i32) -> Result<bool, ClientError> {
+		todo!()
 	}
 }
