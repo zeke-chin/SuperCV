@@ -1,9 +1,11 @@
-use reqwest::Client;
-use serde::Deserialize;
-
 use crate::client::common::{ClientError, ClientUserTrait};
 use crate::client::models::device::{CreateDevice, DeviceResp, UpdateDevice};
+use crate::client::models::file::FileResp;
 use crate::client::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};
+use reqwest::Client;
+use serde::Deserialize;
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 #[derive(Deserialize)]
 struct ApiResponse<T> {
@@ -112,5 +114,54 @@ impl ClientUserTrait for HttpClient {
 	async fn delete_device(&self, device_id: i32) -> Result<bool, ClientError> {
 		todo!()
 	}
-}
+	async fn upload_file(&self, user_id: i32, file_path: &str, file_name: &str) -> Result<FileResp, ClientError> {
+		let url = format!("{}/file/{}", self.base_url, user_id);
 
+		let mut file = tokio::fs::File::open(file_path)
+			.await
+			.map_err(|e| ClientError::UnexpectedError(format!("Failed to open file: {}", e)))?;
+
+		let mut buffer = Vec::new();
+		file.read_to_end(&mut buffer)
+			.await
+			.map_err(|e| ClientError::UnexpectedError(format!("Failed to read file: {}", e)))?;
+
+		let part = reqwest::multipart::Part::bytes(buffer).file_name(file_name.to_string());
+
+		let form = reqwest::multipart::Form::new().part("file", part);
+
+		let response = self
+			.client
+			.post(&url)
+			.multipart(form)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+
+		self.handle_response(response).await
+	}
+
+	async fn get_file(&self, uri: &str) -> Result<Vec<u8>, ClientError> {
+		let url = format!("{}{}", self.base_url, uri);
+
+		let response = self
+			.client
+			.get(&url)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+
+		if response.status().is_success() {
+			response
+				.bytes()
+				.await
+				.map(|b| b.to_vec())
+				.map_err(|e| ClientError::NetworkError(e.to_string()))
+		} else {
+			Err(ClientError::ApiError {
+				code: response.status().as_u16() as i32,
+				message: format!("Failed to get file: {}", response.status()),
+			})
+		}
+	}
+}

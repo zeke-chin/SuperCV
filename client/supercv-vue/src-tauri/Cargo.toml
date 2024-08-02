@@ -62,7 +62,7 @@ pbkdf2 = "0.12.2"
 sha2 = "0.10.8"
 rand = "0.8.5"
 base64 = "0.21.7"
-reqwest = { version = "0.12.5", features = ["json"] }
+reqwest = { version = "0.12.5", features = ["json", "multipart"] }
 async-trait = "0.1.81"
 mockito = "0.30.0"
 
