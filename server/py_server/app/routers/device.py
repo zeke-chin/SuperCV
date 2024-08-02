@@ -25,7 +25,7 @@ def update_device(device_id: int, item: schemas.UpdateDevice, db: Session = Depe
 @router_device.delete("/{device_id}")
 @web_try()
 def delete_device(device_id: int, db: Session = Depends(get_db)):
-    return crud.device.delete_device(db, device_id)
+    return crud.device.delete_device(db, device_id) == True
 
 
 @router_device.get("/user/{user_id}")

@@ -16,8 +16,8 @@ def create_device(db: Session, item: schemas.CreateDevice):
         raise Exception(404, f"user_id={item.user_id} not exists")
 
     db_item = models.Device(**item.dict(), **{
-        "status": 0,
-        "created_at": time.time()
+        "created_at": int(time.time()),
+        "updated_at": time.time()
     })
 
     db.add(db_item)
@@ -43,7 +43,7 @@ def delete_device(db: Session, device_id: int):
         raise Exception(404, f"{device_id=} not exists")
     db.delete(db_item)
     db.commit()
-    return db_item
+    return True
 
 
 def get_device_by_user_id(db: Session, user_id):

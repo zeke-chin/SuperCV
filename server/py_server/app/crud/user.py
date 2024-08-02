@@ -15,7 +15,7 @@ def register_user(db: Session, item: schemas.UserRegister):
         "created_at": time.time(),
         "updated_at": time.time()
     }
-                       )
+    )
 
     db.add(user)
     db.commit()

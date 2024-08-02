@@ -1,11 +1,10 @@
 use crate::client::common::{ClientError, ClientUserTrait};
 use crate::client::models::clipboard::{ClipboardResp, CreateClipboard};
-use crate::client::models::device::{CreateDevice, DeviceResp, UpdateDevice};
+use crate::client::models::device::{CreateDevice, DeviceResp, SyncDevice, SyncDeviceResult, UpdateDevice};
 use crate::client::models::file::FileResp;
 use crate::client::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};
 use reqwest::Client;
 use serde::Deserialize;
-use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
 #[derive(Deserialize)]
@@ -153,28 +152,60 @@ impl ClientUserTrait for HttpClient {
 
 	async fn get_clipboards_by_id(&self, content_id: i32) -> Result<ClipboardResp, ClientError> {
 		let url = format!("{}/content/{}", self.base_url, content_id);
+		let response = self.client.get(&url).send().await.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
+	}
+
+	async fn create_device(&self, entity: CreateDevice) -> Result<DeviceResp, ClientError> {
+		let url = format!("{}/device", self.base_url);
 		let response = self
 			.client
-			.get(&url)
+			.post(&url)
+			.json(&entity)
 			.send()
 			.await
 			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
 		self.handle_response(response).await
 	}
 
-	async fn create_device(&self, create_device: CreateDevice) -> Result<DeviceResp, ClientError> {
-		todo!()
-	}
-
-	async fn update_device(&self, update_device: UpdateDevice) -> Result<DeviceResp, ClientError> {
-		todo!()
-	}
-
-	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<DeviceResp>, ClientError> {
-		todo!()
+	async fn update_device(&self, entity: UpdateDevice, device_id: i32) -> Result<DeviceResp, ClientError> {
+		let url = format!("{}/device/{}", self.base_url, device_id);
+		let response = self
+			.client
+			.post(&url)
+			.json(&entity)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
 	}
 
 	async fn delete_device(&self, device_id: i32) -> Result<bool, ClientError> {
-		todo!()
+		let url = format!("{}/device/{}", self.base_url, device_id);
+		let response = self
+			.client
+			.delete(&url)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
+	}
+
+	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<DeviceResp>, ClientError> {
+		let url = format!("{}/device/user/{}", self.base_url, user_id);
+		let response = self.client.get(&url).send().await.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
+	}
+
+	async fn sync_device(&self, entity: SyncDevice, device_id: i32) -> Result<SyncDeviceResult, ClientError> {
+		let url = format!("{}/device/{}/sync", self.base_url, device_id);
+		let response = self
+			.client
+			.post(&url)
+			.json(&entity)
+			.send()
+			.await
+			.map_err(|e| ClientError::NetworkError(e.to_string()))?;
+		self.handle_response(response).await
 	}
 }

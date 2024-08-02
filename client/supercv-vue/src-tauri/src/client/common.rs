@@ -3,7 +3,7 @@ use std::error::Error as StdError;
 
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ClientError {
 	NetworkError(String),
 	ApiError { code: i32, message: String },
@@ -38,7 +38,8 @@ pub trait ClientUserTrait {
 
 	// Device
 	async fn create_device(&self, create_device: device::CreateDevice) -> Result<device::DeviceResp, ClientError>;
-	async fn update_device(&self, update_device: device::UpdateDevice) -> Result<device::DeviceResp, ClientError>;
-	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<device::DeviceResp>, ClientError>;
+	async fn update_device(&self, update_device: device::UpdateDevice, device_id: i32) -> Result<device::DeviceResp, ClientError>;
 	async fn delete_device(&self, device_id: i32) -> Result<bool, ClientError>;
+	async fn get_devices_by_user_id(&self, user_id: i32) -> Result<Vec<device::DeviceResp>, ClientError>;
+	async fn sync_device(&self, sync_device: device::SyncDevice, device_id: i32) -> Result<device::SyncDeviceResult, ClientError>;
 }
