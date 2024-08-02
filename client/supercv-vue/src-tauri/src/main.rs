@@ -22,6 +22,7 @@ mod core;
 mod db;
 mod shortcut;
 mod utils;
+mod client;
 
 #[tokio::main]
 async fn main() {
@@ -37,6 +38,7 @@ async fn main() {
 		.add_item(setting)
 		.add_item(quit);
 	let system_tray = SystemTray::new().with_menu(tray_menu);
+
 
 	tauri::Builder::default()
 		.setup(move |app| {

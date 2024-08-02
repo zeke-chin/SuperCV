@@ -21,12 +21,8 @@ def create_content(db: Session, item: schemas.CreateContent):
     db.commit()
     return db_item.to_dict()
 
-#
-# def get_content(db: Session, user_id: int, content_type: int, num_day: int):
-#     query = db.query(models.ClipboardEntries).filter(models.ClipboardEntries.user_id == user_id)
-#
-#     if content_type:
-#         query = query.filter(models.ClipboardEntries.content_type == content_type)
-#     if num_day:
-#         query = query.filter(models.ClipboardEntries.created_at > int(time.time()) - num_day * 86400)
-#     return query.all()
+
+def get_content(db: Session, content_id: int):
+    if res := db.query(models.ClipboardEntry).filter_by(id=content_id).first():
+        return res.to_dict()
+    raise Exception(404, f"{content_id=} not exists")

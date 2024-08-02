@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.db.sql import get_db
 from utils.nlp_web import web_try
@@ -32,3 +32,9 @@ def delete_device(device_id: int, db: Session = Depends(get_db)):
 @web_try()
 def get_devices_by_user(user_id: int, db: Session = Depends(get_db)):
     return [item.to_dict() for item in crud.device.get_device_by_user_id(db, user_id)]
+
+
+@router_device.post("/{device_id}/sync")
+@web_try()
+def sync_device(device_id: int, item: schemas.SyncDevice, db: Session = Depends(get_db)):
+    return crud.device.sync_by_device(db, device_id, item)

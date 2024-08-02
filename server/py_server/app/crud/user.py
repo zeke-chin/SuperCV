@@ -35,7 +35,8 @@ def reset_password_user(db: Session, item: schemas.UserResetPassword):
     if db_item := db.query(models.User).filter_by(username=item.username).first():
         if db_item.email == item.email:
             update_to_db(db=db, item_id=db_item.id, update_item=item, model_cls=models.User)
+            return db_item.to_dict()
         else:
-            raise Exception(401, f"email error")
+            raise Exception(401, f"email error db: {db_item.email} != {item.email}", )
     else:
         raise Exception(404, f"{item.username=} not found")
