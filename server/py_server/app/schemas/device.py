@@ -8,9 +8,9 @@ class CreateDevice(BaseModel):
 
 
 class UpdateDevice(BaseModel):
-    name: str = ""
-    icon: str = ""
-    user_id: int = 0
+    name: None | str = ""
+    icon:  None | str = ""
+    user_id:  None | int = 0
 
 
 class SyncItem(BaseModel):

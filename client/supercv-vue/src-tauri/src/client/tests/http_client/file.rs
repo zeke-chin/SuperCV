@@ -29,9 +29,7 @@ mod tests {
 		let client = HttpClient::new(server_url.parse().unwrap());
 
 		// Test file upload
-		let upload_result = client
-			.upload_file(user_id, file_path.to_str().unwrap(), file_name)
-			.await;
+		let upload_result = client.upload_file(user_id, file_path.to_str().unwrap(), file_name).await;
 		assert!(upload_result.is_ok());
 		let file_resp = upload_result.unwrap();
 		assert!(file_resp.uri.contains(file_name));

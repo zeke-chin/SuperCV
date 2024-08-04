@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-	use super::*;
 	use crate::client::common::ClientUserTrait;
 	use crate::client::http_client::HttpClient;
 	use crate::client::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};

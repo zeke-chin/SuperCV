@@ -6,6 +6,8 @@ from collections import defaultdict
 
 from app import schemas, models
 from app.db.sql import update_to_db
+from app.crud import file
+from utils.gen_icon import generate_identicon_bytes
 
 
 def create_device(db: Session, item: schemas.CreateDevice):
@@ -15,7 +17,13 @@ def create_device(db: Session, item: schemas.CreateDevice):
     if db.query(models.User).filter_by(id=item.user_id).first() is None:
         raise Exception(404, f"user_id={item.user_id} not exists")
 
+    icon_bytes = generate_identicon_bytes(item.uuid)
+    icon_path = file.upload_minio_file_byte(
+        item.user_id, icon_bytes, f"{item.uuid}.png"
+    )
+
     db_item = models.Device(**item.dict(), **{
+        "icon": icon_path,
         "created_at": int(time.time()),
         "updated_at": time.time()
     })
@@ -54,7 +62,8 @@ def get_device_by_user_id(db: Session, user_id):
 
 
 def sync_by_device(db: Session, device_id, item: schemas.SyncDevice) -> schemas.SyncDeviceResult:
-    device = db.query(models.Device).filter(models.Device.id == item.device_id).first()
+    device = db.query(models.Device).filter(
+        models.Device.id == item.device_id).first()
     if not device:
         raise Exception(404, f"{device_id=} not found")
 
@@ -86,16 +95,19 @@ def sync_by_device(db: Session, device_id, item: schemas.SyncDevice) -> schemas.
 
         if not server_entry or client_item.timestamp > server_entry.timestamp:
             update_client_ids.append(client_item.client_id)
-            latest_timestamps[client_item.hash] = max(latest_timestamps[client_item.hash], client_item.timestamp)
+            latest_timestamps[client_item.hash] = max(
+                latest_timestamps[client_item.hash], client_item.timestamp)
         elif client_item.timestamp < server_entry.timestamp:
             download_server_ids.append(server_entry.id)
-            latest_timestamps[client_item.hash] = max(latest_timestamps[client_item.hash], server_entry.timestamp)
+            latest_timestamps[client_item.hash] = max(
+                latest_timestamps[client_item.hash], server_entry.timestamp)
 
     # 检查服务器上独有的条目
     for server_entry in server_entries:
         if server_entry.hash not in client_hash_set:
             download_server_ids.append(server_entry.id)
-            latest_timestamps[server_entry.hash] = max(latest_timestamps[server_entry.hash], server_entry.timestamp)
+            latest_timestamps[server_entry.hash] = max(
+                latest_timestamps[server_entry.hash], server_entry.timestamp)
 
     # 批量更新数据库
     updates = []
