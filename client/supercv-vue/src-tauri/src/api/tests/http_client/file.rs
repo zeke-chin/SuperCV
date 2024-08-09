@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-	use crate::client::common::ClientUserTrait;
-	use crate::client::http_client::HttpClient;
+	use crate::api::common::ClientTrait;
+	use crate::api::http_client::HttpClient;
 	use crate::utils::hash::{hash_str, hash_vec};
 	use std::path::PathBuf;
 	use tokio::fs::{remove_file, File};
@@ -22,14 +22,14 @@ mod tests {
 	async fn test_upload_and_get_file() {
 		let file_content = "Hello, World!";
 		let file_path = create_temp_file(file_content).await;
-		let file_name = "test.txt";
+		let file_name = "test_temp_file.txt";
 		let user_id = 1;
 
 		let server_url = "http://127.0.0.1:8000";
 		let client = HttpClient::new(server_url.parse().unwrap());
 
 		// Test file upload
-		let upload_result = client.upload_file(user_id, file_path.to_str().unwrap(), file_name).await;
+		let upload_result = client.upload_file(user_id, file_path.to_str().unwrap()).await;
 		assert!(upload_result.is_ok());
 		let file_resp = upload_result.unwrap();
 		assert!(file_resp.uri.contains(file_name));

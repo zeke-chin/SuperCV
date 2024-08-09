@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-	use crate::client::common::ClientUserTrait;
-	use crate::client::http_client::HttpClient;
-	use crate::client::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};
+	use crate::api::common::ClientTrait;
+	use crate::api::http_client::HttpClient;
+	use crate::api::models::user::{UserLogin, UserRegister, UserResetPassword, UserResp};
 	use mockito::{mock, server_url};
 	use rand::Rng;
 

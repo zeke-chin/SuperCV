@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-	use crate::client::common::ClientUserTrait;
-	use crate::client::http_client::HttpClient;
-	use crate::client::models::clipboard::{ClipboardResp, CreateClipboard};
+	use crate::api::common::ClientTrait;
+	use crate::api::http_client::HttpClient;
+	use crate::api::models::clipboard::{ClipboardResp, CreateClipboard};
 	use crate::utils::hash::{hash_str, hash_vec};
 	use chrono::Utc;
 	use mockito::mock;

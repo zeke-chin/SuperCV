@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::client::common::ClientUserTrait;
-    use crate::client::http_client::HttpClient;
-    use crate::client::models::device::{CreateDevice, UpdateDevice};
+    use crate::api::common::ClientTrait;
+    use crate::api::http_client::HttpClient;
+    use crate::api::models::device::{CreateDevice, UpdateDevice};
     use rand::Rng;
 
     #[tokio::test]

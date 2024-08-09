@@ -22,7 +22,7 @@ mod core;
 mod db;
 mod shortcut;
 mod utils;
-mod client;
+mod api;
 
 #[tokio::main]
 async fn main() {
