@@ -13,17 +13,17 @@ router_user = APIRouter(
 
 @router_user.post("/register")
 @web_try()
-def creat_user(item: schemas.UserRegister, db: Session = Depends(get_db)):
+def register_user(item: schemas.UserRegister, db: Session = Depends(get_db)):
     return crud.user.register_user(db, item)
 
 
 @router_user.post("/login")
 @web_try()
-def creat_user(item: schemas.UserLogin, db: Session = Depends(get_db)):
+def login_user(item: schemas.UserLogin, db: Session = Depends(get_db)):
     return crud.user.login_user(db, item)
 
 @router_user.post("/reset")
 @web_try()
-def creat_user(item: schemas.UserResetPassword, db: Session = Depends(get_db)):
+def reset_user(item: schemas.UserResetPassword, db: Session = Depends(get_db)):
     return crud.user.reset_password_user(db, item)
 
