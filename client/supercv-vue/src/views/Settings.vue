@@ -211,6 +211,7 @@ const getDayLabel = (days: number) => {
   width: 100vw;
   background: var(--bg-color);
   color: var(--text-color);
+  overflow-y: auto;
 }
 
 .header {
@@ -455,5 +456,23 @@ body {
 
 :root.light .theme-option.active span {
   color: #ffffff;
+}
+
+/* 添加滚动条样式 */
+.settings::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings::-webkit-scrollbar-thumb {
+  background: rgba(88, 206, 141, 0.5);
+  border-radius: 4px;
+}
+
+.settings::-webkit-scrollbar-thumb:hover {
+  background: rgba(88, 206, 141, 0.7);
 }
 </style>
