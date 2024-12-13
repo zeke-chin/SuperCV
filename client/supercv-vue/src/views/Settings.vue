@@ -103,10 +103,10 @@ watch(
   { deep: true }
 )
 
-const getDayLabel = (days: number) => {
-  const option = dayOptions.find(opt => opt.value === days)
-  return option ? option.label : `${days} 天`
-}
+// const getDayLabel = (days: number) => {
+//   const option = dayOptions.find(opt => opt.value === days)
+//   return option ? option.label : `${days} 天`
+// }
 
 const validateInput = (event: Event) => {
   const input = event.target as HTMLInputElement
