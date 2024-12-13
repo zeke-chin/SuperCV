@@ -11,31 +11,19 @@ router_user = APIRouter(
 )
 
 
-@router_user.post("")
+@router_user.post("/register")
 @web_try()
-def creat_user(item: schemas.User, db: Session = Depends(get_db)):
-    return crud.user.create_user(db, item)
+def register_user(item: schemas.UserRegister, db: Session = Depends(get_db)):
+    return crud.user.register_user(db, item)
 
 
-@router_user.get("")
+@router_user.post("/login")
 @web_try()
-def get_users(params: Params = Depends(), db: Session = Depends(get_db)):
-    return paginate([item.to_dict() for item in crud.user.get_user(db)], params)
+def login_user(item: schemas.UserLogin, db: Session = Depends(get_db)):
+    return crud.user.login_user(db, item)
 
-
-@router_user.get("/{user_id}")
+@router_user.post("/reset")
 @web_try()
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    return crud.user.get_user(db, user_id)
+def reset_user(item: schemas.UserResetPassword, db: Session = Depends(get_db)):
+    return crud.user.reset_password_user(db, item)
 
-
-@router_user.post("/{user_id}")
-@web_try()
-def update_user(user_id: int, item: schemas.User, db: Session = Depends(get_db)):
-    return crud.user.update_user(db, item, user_id)
-
-
-@router_user.delete("/{user_id}")
-@web_try()
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    return crud.user.delete_user(db, user_id)

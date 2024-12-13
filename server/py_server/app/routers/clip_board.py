@@ -17,13 +17,7 @@ def create_content(item: schemas.CreateContent, db: Session = Depends(get_db)):
     return crud.create_content(db, item)
 
 
-@router_content.get("/{user_id}")
+@router_content.get("/{content_id}")
 @web_try()
-def get_content(
-        user_id: int,
-        content_type: int = Query(default=None),  # 设置默认值为None，使其成为可选参数
-        num_day: int = Query(default=None),  # 设置默认值为None，使其成为可选参数
-        params: Params = Depends(),
-        db: Session = Depends(get_db)
-):
-    return paginate([item.to_dict() for item in crud.get_content(db, user_id, content_type, num_day)], params)
+def get_content(content_id: int, db: Session = Depends(get_db)):
+    return crud.get_content(db, content_id)

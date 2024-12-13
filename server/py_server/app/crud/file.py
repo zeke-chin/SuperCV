@@ -13,9 +13,16 @@ FMH = FileHandler("host-clipboard")
 def upload_minio_file(user_id: int, file):
     file_byte = file.file.read()
     result = str(user_id) / Path(time.strftime("%Y%m%d", time.localtime()))
-    real_path = result / file.filename
+    real_path = result / f"{int(time.time())}_{file.filename}"
     path = FMH.put_file(real_path, file_byte)
     return {'uri': f'/file/{path}'}
+
+
+def upload_minio_file_byte(user_id: int, file_byte, file_name):
+    result = str(user_id) / Path(time.strftime("%Y%m%d", time.localtime()))
+    real_path = result / f"{int(time.time())}_{file_name}"
+    path = FMH.put_file(real_path, file_byte)
+    return f'/file/{path}'
 
 
 def get_minio_file(path: str):

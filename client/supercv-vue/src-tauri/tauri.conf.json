@@ -74,8 +74,8 @@
                 "fullscreen": false,
                 "resizable": true,
                 "title": "Settings",
-                "width": 1000,
-                "height": 800,
+                "width": 750,
+                "height": 645,
                 "url": "index.html#/settings"
             }
         ],

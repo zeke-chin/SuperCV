@@ -1,7 +1,4 @@
-#![cfg_attr(
-	all(not(debug_assertions), target_os = "windows"),
-	windows_subsystem = "windows"
-)]
+#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 use std::sync::Arc;
 
@@ -11,12 +8,12 @@ use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 use crate::clipboard_helper::{
-	rs_invoke_get_clipboards, rs_invoke_get_user_config, rs_invoke_open_settings,
-	rs_invoke_search_clipboards, rs_invoke_set_clipboards, rs_invoke_set_user_config,
-	ClipboardHelper,
+	rs_invoke_get_clipboards, rs_invoke_get_user_config, rs_invoke_open_settings, rs_invoke_search_clipboards, rs_invoke_set_clipboards,
+	rs_invoke_set_user_config, ClipboardHelper,
 };
 use crate::shortcut::{rs_invoke_register_global_shortcut, MainGlobalShortcut};
 
+mod api;
 mod clipboard_helper;
 mod core;
 mod db;
@@ -32,10 +29,7 @@ async fn main() {
 	let quit = CustomMenuItem::new("quit".to_string(), "退出");
 	let show_window = CustomMenuItem::new("show_window".to_string(), "显示页面");
 	let setting = CustomMenuItem::new("setting".to_string(), "设置");
-	let tray_menu = SystemTrayMenu::new()
-		.add_item(show_window)
-		.add_item(setting)
-		.add_item(quit);
+	let tray_menu = SystemTrayMenu::new().add_item(show_window).add_item(setting).add_item(quit);
 	let system_tray = SystemTray::new().with_menu(tray_menu);
 
 	tauri::Builder::default()
@@ -44,17 +38,11 @@ async fn main() {
 			// windows
 			let main_window = app.get_window("main").unwrap();
 			#[cfg(target_os = "macos")]
-			apply_vibrancy(
-				&main_window,
-				NSVisualEffectMaterial::HudWindow,
-				None,
-				Some(12.0),
-			)
-			.expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+			apply_vibrancy(&main_window, NSVisualEffectMaterial::HudWindow, None, Some(12.0))
+				.expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
 			#[cfg(target_os = "windows")]
-			apply_blur(&main_window, Some((18, 18, 18, 125)))
-				.expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+			apply_blur(&main_window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
 			let main_handle = main_window.clone();
 			main_handle.set_decorations(false).unwrap();
@@ -64,7 +52,7 @@ async fn main() {
 			// 注册全局快捷键
 			let main_handle: tauri::Window = main_window.clone();
 			let main_global_shortcut = MainGlobalShortcut::new(main_handle);
-			main_global_shortcut.register(&app_handle, "CommandOrControl+Shift+L")?;
+			main_global_shortcut.register(&app_handle, "CommandOrControl+Shift+0")?;
 			app.manage(main_global_shortcut);
 			// let mut global_shortcut = app.global_shortcut_manager();
 			// // let window_handle = main_window.clone();

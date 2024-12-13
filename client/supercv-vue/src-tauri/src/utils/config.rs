@@ -51,10 +51,12 @@ pub struct UserConfig {
 }
 
 pub struct Config {
+    pub cache_dir: PathBuf,
     pub db_path: PathBuf,
     pub files_path: PathBuf,
     pub logs_path: PathBuf,
     pub user_config: UserConfig,
+    pub icon_path: PathBuf,
 }
 
 impl Config {
@@ -63,6 +65,7 @@ impl Config {
         let db_path = cache_dir.join("db");
         let files_path = cache_dir.join("files");
         let logs_path = cache_dir.join("logs");
+        let icon_path = files_path.join("icons");
 
         for p in [&db_path, &files_path, &logs_path, &config_dir].iter() {
             if !p.exists() {
@@ -73,10 +76,12 @@ impl Config {
         let user_config = UserConfig::load(&config_dir).expect("加载用户配置失败");
 
         Self {
+            cache_dir,
             db_path,
             files_path,
             logs_path,
             user_config,
+            icon_path
         }
     }
 

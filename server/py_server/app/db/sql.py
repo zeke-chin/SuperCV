@@ -31,8 +31,8 @@ class BaseModel(Base):
     def update(self, db: Session, enforce_update: Optional[dict] = None):
         for k in enforce_update or {}:
             flag_modified(self, k)
-        if hasattr(self, "update_time"):
-            self.update_time = int(time.time())
+        if hasattr(self, "updated_at"):
+            self.updated_at = int(time.time())
         # db.add(self)
         db.commit()
         db.flush()
@@ -45,8 +45,8 @@ class BaseModel(Base):
                     continue
             if not key.startswith('_') and key in data:
                 setattr(self, key, data[key])
-            if hasattr(self, 'update_time'):
-                setattr(self, 'update_time', time.time())
+            if hasattr(self, 'updated_at'):
+                setattr(self, 'updated_at', time.time())
 
 
 def update_to_db(db: Session, item_id: int, update_item, model_cls: Type[BaseModel],
@@ -67,8 +67,8 @@ def update_to_db(db: Session, item_id: int, update_item, model_cls: Type[BaseMod
         setattr(db_item, k, v)
         flag_modified(db_item, k)
 
-    if hasattr(db_item, "update_time"):
-        db_item.update_time = int(time.time())
+    if hasattr(db_item, "updated_at"):
+        db_item.updated_at = int(time.time())
     db.commit()
     db.flush()
     db.refresh(db_item)

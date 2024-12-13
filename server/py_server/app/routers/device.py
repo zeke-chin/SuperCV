@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from fastapi_pagination import Params, paginate
 from app.db.sql import get_db
 from utils.nlp_web import web_try
 from app import schemas, crud, models
@@ -17,18 +16,6 @@ def create_device(item: schemas.CreateDevice, db: Session = Depends(get_db)):
     return crud.device.create_device(db, item)
 
 
-@router_device.get("")
-@web_try()
-def get_devices(params: Params = Depends(), db: Session = Depends(get_db)):
-    return paginate([item.to_dict() for item in crud.device.get_device(db)], params)
-
-
-@router_device.get("/{device_id}")
-@web_try()
-def get_device_by_uuid(device_id: int, db: Session = Depends(get_db)):
-    return crud.device.get_device(db, device_id)
-
-
 @router_device.post("/{device_id}")
 @web_try()
 def update_device(device_id: int, item: schemas.UpdateDevice, db: Session = Depends(get_db)):
@@ -38,10 +25,16 @@ def update_device(device_id: int, item: schemas.UpdateDevice, db: Session = Depe
 @router_device.delete("/{device_id}")
 @web_try()
 def delete_device(device_id: int, db: Session = Depends(get_db)):
-    return crud.device.delete_device(db, device_id)
+    return crud.device.delete_device(db, device_id) == True
 
 
 @router_device.get("/user/{user_id}")
 @web_try()
-def get_devices_by_user(user_id: int, params: Params = Depends(), db: Session = Depends(get_db)):
-    return paginate([item.to_dict() for item in crud.device.get_device_by_user_id(db, user_id)], params)
+def get_devices_by_user(user_id: int, db: Session = Depends(get_db)):
+    return [item.to_dict() for item in crud.device.get_device_by_user_id(db, user_id)]
+
+
+@router_device.post("/{device_id}/sync")
+@web_try()
+def sync_device(device_id: int, item: schemas.SyncDevice, db: Session = Depends(get_db)):
+    return crud.device.sync_by_device(db, device_id, item)
