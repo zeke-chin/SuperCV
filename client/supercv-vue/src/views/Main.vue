@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, Ref, onUnmounted } from 'vue'
+import { ref, onMounted, computed, watch, Ref, onUnmounted, nextTick } from 'vue'
 import { appWindow, Theme } from '@tauri-apps/api/window'
 import { ClipboardHelper, ClipboardEntry, UserConfig } from '../clipboardHelper'
 import { invoke } from '@tauri-apps/api/tauri'
@@ -11,6 +11,7 @@ const clipboardEntries = ref<ClipboardEntry[]>([])
 const selectedIndex = ref(-1)
 let isKeyboardSelection = ref(true)
 const previewNumber = ref(10)
+const tempDisplayCount = ref(0)
 
 function openSettings() {
   invoke('rs_invoke_open_settings')
@@ -49,7 +50,8 @@ const imageSrc = computed(() => {
 
 async function getClipboardContent() {
   try {
-    clipboardEntries.value = await ClipboardHelper.getClipboardEntries(previewNumber.value)
+    const displayNum = tempDisplayCount.value || previewNumber.value
+    clipboardEntries.value = await ClipboardHelper.getClipboardEntries(displayNum)
     selectedIndex.value = -1
   } catch (error) {
     console.error('Failed to get clipboard content:', error)
@@ -59,9 +61,10 @@ async function getClipboardContent() {
 
 async function searchClipboard() {
   try {
+    const displayNum = tempDisplayCount.value || previewNumber.value
     clipboardEntries.value = await ClipboardHelper.searchClipboardEntries(
       textInput.value,
-      previewNumber.value
+      displayNum
     )
     selectedIndex.value = -1
   } catch (error) {
@@ -91,19 +94,23 @@ function handleKeydown(e: KeyboardEvent) {
     isKeyboardSelection.value = true
     if (e.key === 'ArrowUp' && selectedIndex.value > 0) {
       selectedIndex.value--
-    } else if (e.key === 'ArrowDown' && selectedIndex.value < clipboardEntries.value.length - 1) {
+    } else if (e.key === 'ArrowDown' && selectedIndex.value < clipboardEntries.value.length) {
       selectedIndex.value++
     }
   } else if (e.key === 'Enter' || ((e.metaKey || e.ctrlKey) && e.key === 'c')) {
-    e.preventDefault() // 阻止默认的复制操作
+    e.preventDefault()
     if (selectedIndex.value !== -1) {
+      if (selectedIndex.value === clipboardEntries.value.length) {
+        handleLoadMore()
+        return
+      }
       const selectedItem = clipboardEntries.value[selectedIndex.value]
       copyToClipboardAndHide(selectedItem)
     }
   } else if (e.key === 'Escape') {
     appWindow.hide()
   } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
-    e.preventDefault() // 阻止默认行为
+    e.preventDefault()
     try {
       openSettings()
     } catch (e) {
@@ -144,6 +151,39 @@ async function updatePreviewNumber() {
   }
 }
 
+function handleLoadMore() {
+  const currentIndex = selectedIndex.value  // 保存当前选中的位置
+  tempDisplayCount.value = (tempDisplayCount.value || previewNumber.value) + 5
+  if (textInput.value.trim() !== '') {
+    searchClipboard().then(() => {
+      selectedIndex.value = currentIndex  // 恢复选中位置
+    })
+  } else {
+    getClipboardContent().then(() => {
+      selectedIndex.value = currentIndex  // 恢复选中位置
+    })
+  }
+}
+
+// 添加一个函数来处理滚动
+function scrollToSelected() {
+  // 等待 DOM 更新
+  nextTick(() => {
+    const selectedElement = document.querySelector('.paste-content-item-selected')
+    if (selectedElement) {
+      selectedElement.scrollIntoView({
+        block: 'nearest',  // 使用 'nearest' 实现更平滑的滚动
+        behavior: 'smooth'
+      })
+    }
+  })
+}
+
+// 在 selectedIndex 改变时触发滚动
+watch(selectedIndex, () => {
+  scrollToSelected()
+})
+
 onMounted(async () => {
   await updatePreviewNumber()
   const unlisten = await listen('userConfigChanged', async () => {
@@ -160,6 +200,7 @@ onMounted(async () => {
   await appWindow.onFocusChanged(async ({ payload: focused }) => {
     if (focused) {
       textInput.value = ''
+      tempDisplayCount.value = 0
       await getClipboardContent()
       inputRef.value?.focus()
     }
@@ -220,6 +261,8 @@ const pasteItemIcon = computed(() => (type: number) => {
       return '🖼️'
     case 2:
       return '📁'
+    case -1:
+      return '🔄'
     default:
       return '📝'
   }
@@ -227,7 +270,13 @@ const pasteItemIcon = computed(() => (type: number) => {
 
 const handleSelectPasteItem = (index: number, item: any) => {
   selectedIndex.value = index
-  copyToClipboardAndHide(item)
+  if (index === clipboardEntries.value.length) {
+    // 如果是 "加载更多" 选项
+    handleLoadMore()
+  } else {
+    // 如果是普通剪贴板项
+    copyToClipboardAndHide(item)
+  }
 }
 
 const hoverSettings = ref(false)
@@ -255,7 +304,16 @@ const hoverSettings = ref(false)
           <div class="paste-item-text">
             {{ item.content }}
           </div>
-          <div class="paste-item-shortcut"></div>
+        </div>
+        <div class="paste-content-item" :class="{
+          'paste-content-item-selected': selectedIndex === clipboardEntries.length,
+        }" @mouseover="() => { selectedIndex = clipboardEntries.length }" @click="handleLoadMore">
+          <div class="paste-item-icon">
+            {{ pasteItemIcon(-1) }}
+          </div>
+          <div class="paste-item-text">
+            加载更多...
+          </div>
         </div>
       </div>
       <div class="paste-content-desc">
@@ -469,5 +527,14 @@ const hoverSettings = ref(false)
 .main-dark .paste-filter-input {
   background: rgba(0, 0, 0, 0.2);
   color: #fff;
+}
+
+.load-more {
+  text-align: center;
+  cursor: pointer;
+}
+
+.load-more .paste-item-text {
+  justify-content: center;
 }
 </style>
