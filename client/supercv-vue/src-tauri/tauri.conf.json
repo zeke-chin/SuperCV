@@ -75,7 +75,7 @@
                 "resizable": true,
                 "title": "Settings",
                 "width": 750,
-                "height": 450,
+                "height": 645,
                 "url": "index.html#/settings"
             }
         ],

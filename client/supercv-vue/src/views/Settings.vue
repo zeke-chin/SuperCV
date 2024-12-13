@@ -2,6 +2,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { UserConfig } from '../clipboardHelper'
 import { invoke } from '@tauri-apps/api/tauri'
+import { emit } from '@tauri-apps/api/event'
 
 const config = ref<UserConfig>({
   expired_config: {
@@ -87,8 +88,8 @@ const saveConfig = async () => {
 
 const handlePreviewNumberChange = async () => {
   await saveConfig()
-  // 触发一个自定义事件，让其他组件知道配置已更新
-  window.dispatchEvent(new Event('userConfigChanged'))
+  console.log('触发 userConfigChanged 事件')
+  await emit('userConfigChanged')
 }
 
 watch(
@@ -105,6 +106,23 @@ watch(
 const getDayLabel = (days: number) => {
   const option = dayOptions.find(opt => opt.value === days)
   return option ? option.label : `${days} 天`
+}
+
+const validateInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = parseInt(input.value)
+
+  // 确保输入是数字且在1-100之间
+  if (isNaN(value)) {
+    value = 1
+  } else if (value < 1) {
+    value = 1
+  } else if (value > 100) {
+    value = 100
+  }
+
+  // 更新输入值
+  config.value.preview_config.preview_number = value
 }
 </script>
 
@@ -175,7 +193,7 @@ const getDayLabel = (days: number) => {
             <div class="setting-label">
               <span>预览条数</span>
             </div>
-            <input type="number" v-model="config.preview_config.preview_number" min="1" max="100"
+            <input type="number" v-model="config.preview_config.preview_number" min="1" max="100" @input="validateInput"
               @change="handlePreviewNumberChange" />
           </div>
         </div>

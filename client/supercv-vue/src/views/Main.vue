@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, Ref } from 'vue'
+import { ref, onMounted, computed, watch, Ref, onUnmounted } from 'vue'
 import { appWindow, Theme } from '@tauri-apps/api/window'
-import { ClipboardHelper, ClipboardEntry } from '../clipboardHelper'
+import { ClipboardHelper, ClipboardEntry, UserConfig } from '../clipboardHelper'
 import { invoke } from '@tauri-apps/api/tauri'
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { listen } from '@tauri-apps/api/event'
 
 const textInput = ref('')
 const clipboardEntries = ref<ClipboardEntry[]>([])
 const selectedIndex = ref(-1)
 let isKeyboardSelection = ref(true)
+const previewNumber = ref(10)
 
 function openSettings() {
   invoke('rs_invoke_open_settings')
@@ -47,8 +49,8 @@ const imageSrc = computed(() => {
 
 async function getClipboardContent() {
   try {
-    clipboardEntries.value = await ClipboardHelper.getClipboardEntries()
-    selectedIndex.value = -1 // Reset selection
+    clipboardEntries.value = await ClipboardHelper.getClipboardEntries(previewNumber.value)
+    selectedIndex.value = -1
   } catch (error) {
     console.error('Failed to get clipboard content:', error)
     clipboardEntries.value = []
@@ -57,8 +59,11 @@ async function getClipboardContent() {
 
 async function searchClipboard() {
   try {
-    clipboardEntries.value = await ClipboardHelper.searchClipboardEntries(textInput.value)
-    selectedIndex.value = -1 // Reset selection
+    clipboardEntries.value = await ClipboardHelper.searchClipboardEntries(
+      textInput.value,
+      previewNumber.value
+    )
+    selectedIndex.value = -1
   } catch (error) {
     console.error('Failed to search clipboard content:', error)
     clipboardEntries.value = []
@@ -120,12 +125,31 @@ const updateTheme = async () => {
     ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
     : savedTheme as 'light' | 'dark'
 
-  console.log('Current theme:', themeValue)
+  // console.log('Current theme:', themeValue)
   theme.value = themeValue
 }
 
+async function updatePreviewNumber() {
+  try {
+    const config = await UserConfig.getUserConfig()
+    previewNumber.value = config.preview_config.preview_number
+    console.log('updatePreviewNumber', previewNumber.value)
+    if (textInput.value.trim() !== '') {
+      await searchClipboard()
+    } else {
+      await getClipboardContent()
+    }
+  } catch (error) {
+    console.error('Failed to get user config:', error)
+  }
+}
+
 onMounted(async () => {
-  await getClipboardContent()
+  await updatePreviewNumber()
+  const unlisten = await listen('userConfigChanged', async () => {
+    console.log('接收到 userConfigChanged 事件')
+    await updatePreviewNumber()
+  })
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('mousemove', handleMouseMove)
 
@@ -136,7 +160,7 @@ onMounted(async () => {
   await appWindow.onFocusChanged(async ({ payload: focused }) => {
     if (focused) {
       textInput.value = ''
-      getClipboardContent()
+      await getClipboardContent()
       inputRef.value?.focus()
     }
     updateTheme()
@@ -145,6 +169,10 @@ onMounted(async () => {
   inputRef.value?.focus()
 
   updateTheme()
+
+  onUnmounted(() => {
+    unlisten()
+  })
 })
 
 watch(textInput, () => {
