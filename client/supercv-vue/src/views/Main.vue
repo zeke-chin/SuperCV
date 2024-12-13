@@ -115,16 +115,23 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const theme: Ref<Theme> = ref('light')
 
 const updateTheme = async () => {
-  const themeValue = await appWindow.theme()
-  if (themeValue) {
-    theme.value = themeValue
-  }
+  const savedTheme = localStorage.getItem('theme') || 'system'
+  const themeValue = savedTheme === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : savedTheme as 'light' | 'dark'
+
+  console.log('Current theme:', themeValue)
+  theme.value = themeValue
 }
 
 onMounted(async () => {
   await getClipboardContent()
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('mousemove', handleMouseMove)
+
+  window.addEventListener('theme-changed', async () => {
+    await updateTheme()
+  })
 
   await appWindow.onFocusChanged(async ({ payload: focused }) => {
     if (focused) {
@@ -199,33 +206,21 @@ const hoverSettings = ref(false)
 </script>
 
 <template>
-  <div
-    class="main"
-    :class="{
-      'main-dark': theme === 'dark',
-      'main-light': theme === 'light',
-    }"
-    data-tauri-drag-region
-  >
+  <div class="main" :class="{
+    'main-dark': theme === 'dark',
+    'main-light': theme === 'light',
+  }" data-tauri-drag-region>
     <div class="paste-filter">
       <input class="paste-filter-input" ref="inputRef" v-model="textInput" />
     </div>
     <div class="paste-content">
       <div class="paste-content-list">
-        <div
-          class="paste-content-item"
-          :class="{
-            'paste-content-item-selected': selectedIndex === index,
-          }"
-          v-for="(item, index) in clipboardEntries"
-          :key="item.id"
-          @mouseover="
-            () => {
-              selectedIndex = index
-            }
-          "
-          @click="handleSelectPasteItem(index, item)"
-        >
+        <div class="paste-content-item" :class="{
+          'paste-content-item-selected': selectedIndex === index,
+        }" v-for="(item, index) in clipboardEntries" :key="item.id" @mouseover="() => {
+          selectedIndex = index
+        }
+          " @click="handleSelectPasteItem(index, item)">
           <div class="paste-item-icon">
             {{ pasteItemIcon(item.type) }}
           </div>
@@ -241,13 +236,10 @@ const hoverSettings = ref(false)
           <pre v-else>{{ displayContent }}</pre>
         </div>
         <div class="timestamp-wrapper" data-tauri-drag-region>
-          <p
-            class="timestamp-content"
-            :class="{
-              'timestamp-content-light': theme === 'light',
-              'timestamp-content-dark': theme === 'dark',
-            }"
-          >
+          <p class="timestamp-content" :class="{
+            'timestamp-content-light': theme === 'light',
+            'timestamp-content-dark': theme === 'dark',
+          }">
             <span v-if="selectedTimestamp">
               {{ formattedTimestamp }}
             </span>
@@ -256,38 +248,23 @@ const hoverSettings = ref(false)
         </div>
       </div>
     </div>
-    <div
-      class="paste-settings"
-      @mouseenter="
-        () => {
-          hoverSettings = true
-        }
-      "
-      @mouseleave="
-        () => {
-          hoverSettings = false
-        }
-      "
-    >
-      <img
-        v-if="theme === 'dark' || hoverSettings"
-        class="paste-settings-icon paste-settings-icon-normal"
-        src="../assets/settings-hover.svg"
-        alt="Settings"
-        @click="openSettings"
-      />
-      <img
-        v-else
-        class="paste-settings-icon paste-settings-icon-hover"
-        src="../assets/settings.svg"
-        alt="Settings"
-        @click="openSettings"
-      />
+    <div class="paste-settings" @mouseenter="() => {
+      hoverSettings = true
+    }
+      " @mouseleave="() => {
+        hoverSettings = false
+      }
+        ">
+      <img v-if="theme === 'dark' || hoverSettings" class="paste-settings-icon paste-settings-icon-normal"
+        src="../assets/settings-hover.svg" alt="Settings" @click="openSettings" />
+      <img v-else class="paste-settings-icon paste-settings-icon-hover" src="../assets/settings.svg" alt="Settings"
+        @click="openSettings" />
     </div>
   </div>
 </template>
 
 <style>
+/* 主窗口尺寸设置 - 默认宽度100%, 高度100vh */
 .main {
   width: 100%;
   height: 100vh;
@@ -296,14 +273,19 @@ const hoverSettings = ref(false)
   display: flex;
   flex-direction: column;
   position: relative;
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .main-light {
   color: #000;
+  background-color: rgba(255, 255, 255, 0.7);
 }
 
 .main-dark {
   color: #fff;
+  background-color: rgba(44, 44, 44, 0.4);
 }
 
 .paste-settings {
@@ -337,7 +319,7 @@ const hoverSettings = ref(false)
   border: none;
   box-shadow: none;
   outline: none;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.2);
   padding-left: 5px;
   font-size: 18px;
 }
@@ -386,7 +368,7 @@ const hoverSettings = ref(false)
   display: block;
   /* 设置 img 为块级元素 */
   margin: auto;
-  /* 自动外边距实现水平居中 */
+  /* 自动外距实现水平居中 */
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -402,7 +384,7 @@ const hoverSettings = ref(false)
 }
 
 .timestamp-content-light {
-  color: #3c3a3a;
+  color: #000000;
 }
 
 .timestamp-content-dark {
@@ -448,5 +430,16 @@ const hoverSettings = ref(false)
 
 .paste-item-shortcut {
   width: 30px;
+}
+
+/* 修改输入框样式 */
+.main-light .paste-filter-input {
+  background: rgba(255, 255, 255, 0.3);
+  color: #000;
+}
+
+.main-dark .paste-filter-input {
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
 }
 </style>
