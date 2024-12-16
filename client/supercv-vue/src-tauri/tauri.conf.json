@@ -61,13 +61,15 @@
         "windows": [
             {
                 "label": "main",
+                "decorations": false,
+                "transparent": true,
                 "fullscreen": false,
                 "resizable": false,
+                "acceptFirstMouse": true,
+                "hiddenTitle": true,
                 "title": "SuperCV",
                 "width": 750,
-                "height": 455,
-                "transparent": true,
-                "decorations": false
+                "height": 455
             },
             {
                 "label": "settings",

@@ -41,9 +41,11 @@ async fn main() {
             apply_vibrancy(&main_window, NSVisualEffectMaterial::HudWindow, None, Some(12.0))
                 .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 
+            // #[cfg(target_os = "windows")]
+            // apply_blur(&main_window, None).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             #[cfg(target_os = "windows")]
-            apply_blur(&main_window, Some((18, 18, 18, 125))).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
-
+            main_window.set_decorations(false).unwrap();
+            
             let main_handle = main_window.clone();
             main_handle.set_decorations(false).unwrap();
             let settings_window = app.get_window("settings").unwrap();
@@ -58,8 +60,12 @@ async fn main() {
             // 添加失去焦点事件处理
             let window_handle = main_window.clone();
             main_window.on_window_event(move |event| {
-                if let tauri::WindowEvent::Focused(false) = event {
-                    window_handle.hide().unwrap();
+                match event {
+                    // 只在真正需要隐藏窗口的时候处理事件
+                    tauri::WindowEvent::CloseRequested { .. } => {
+                        window_handle.hide().unwrap();
+                    }
+                    _ => {}
                 }
             });
 

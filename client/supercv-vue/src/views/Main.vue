@@ -211,7 +211,7 @@ onMounted(async () => {
     })
 
     await appWindow.onFocusChanged(async ({ payload: focused }) => {
-      if (focused) {
+      if (focused && !document.hasFocus()) {
         textInput.value = ''
         tempDisplayCount.value = 0
         await getClipboardContent()
@@ -396,7 +396,7 @@ const hoverSettings = ref(false)
 
 .main-dark {
   color: #fff;
-  background-color: rgba(44, 44, 44, 0.4);
+  background-color: rgba(44, 44, 44, 0.9);
 }
 
 .paste-settings {
