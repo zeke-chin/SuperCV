@@ -65,6 +65,9 @@ SuperCV 利用 Tauri 和 Rust 构建，是一个剪切板增强工具。
    - `npm install` or `yarn`
 4. 启动 dev
    - `npm run tauri dev`
+5. 打包
+   - 修改 `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json` 中的 `version` 为新版本号
+   - `npm run tauri build`
 
 <!DOCTYPE html>
 <html lang="en">
