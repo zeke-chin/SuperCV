@@ -55,7 +55,7 @@
             "csp": null
         },
         "systemTray": {
-            "iconPath": "icons/tray-icon-mono.ico",
+            "iconPath": "icons/icon.ico",
             "iconAsTemplate": false
         },
         "windows": [
