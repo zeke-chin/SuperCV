@@ -4,7 +4,7 @@ import { UserConfig } from '../clipboardHelper'
 import { invoke } from '@tauri-apps/api/tauri'
 import { emit } from '@tauri-apps/api/event'
 
-const config = ref<UserConfig>({
+const user_config = ref<UserConfig>({
   expired_config: {
     text: 0,
     img: 0,
@@ -13,6 +13,22 @@ const config = ref<UserConfig>({
   preview_config: {
     preview_number: 10,
   },
+  global_shortcut: ''
+})
+onMounted(async () => {
+  try {
+    // 从后端获取用户配置
+    user_config.value = await UserConfig.getUserConfig()
+    // 设置开关状态
+    keepText.value = user_config.value.expired_config.text > 0
+    keepImages.value = user_config.value.expired_config.img > 0
+    keepFileList.value = user_config.value.expired_config.file > 0
+  } catch (error) {
+    console.error('获取用户配置失败:', error)
+    // 如果获取失败,保持默认值
+  } finally {
+    loading.value = false  // 无论成功失败都关闭加载状态
+  }
 })
 
 const keepText = ref(false)
@@ -58,18 +74,7 @@ const handleThemeChange = async (mode: string) => {
   window.dispatchEvent(new Event('theme-changed'))
 }
 
-onMounted(async () => {
-  try {
-    config.value = await UserConfig.getUserConfig()
-    keepText.value = config.value.expired_config.text > 0
-    keepImages.value = config.value.expired_config.img > 0
-    keepFileList.value = config.value.expired_config.file > 0
-  } catch (error) {
-    console.error('加载用户配置失败:', error)
-  } finally {
-    loading.value = false
-  }
-})
+
 
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme') || 'system'
@@ -79,8 +84,12 @@ onMounted(() => {
 
 const saveConfig = async () => {
   try {
-    await UserConfig.setUserConfig(config.value)
-    console.log('设置已保存')
+    if (user_config.value) {
+      await UserConfig.setUserConfig(user_config.value)
+      console.log('设置已保存')
+    } else {
+      console.error('user_config.value 为 null')
+    }
   } catch (error) {
     console.error('保存用户配置失败:', error)
   }
@@ -93,20 +102,23 @@ const handlePreviewNumberChange = async () => {
 }
 
 watch(
-  [() => config.value.preview_config.preview_number, keepText, keepImages, keepFileList],
+  [
+    () => user_config.value.preview_config.preview_number, 
+    () => user_config.value.expired_config.text,
+    () => user_config.value.expired_config.img,
+    () => user_config.value.expired_config.file,
+    keepText, 
+    keepImages, 
+    keepFileList
+  ],
   () => {
-    if (!keepText.value) config.value.expired_config.text = 0
-    if (!keepImages.value) config.value.expired_config.img = 0
-    if (!keepFileList.value) config.value.expired_config.file = 0
+    if (!keepText.value) user_config.value.expired_config.text = 0
+    if (!keepImages.value) user_config.value.expired_config.img = 0
+    if (!keepFileList.value) user_config.value.expired_config.file = 0
     saveConfig()
   },
   { deep: true }
 )
-
-// const getDayLabel = (days: number) => {
-//   const option = dayOptions.find(opt => opt.value === days)
-//   return option ? option.label : `${days} 天`
-// }
 
 const validateInput = (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -122,7 +134,7 @@ const validateInput = (event: Event) => {
   }
 
   // 更新输入值
-  config.value.preview_config.preview_number = value
+  user_config.value.preview_config.preview_number = value
 }
 
 const DEFAULT_SHORTCUT = navigator.platform.includes('Mac') 
@@ -153,6 +165,13 @@ const recordShortcut = async (e: KeyboardEvent) => {
     currentShortcut.value = newShortcut
     
     try {
+      // 更新 user_config 中的快捷键
+      user_config.value.global_shortcut = newShortcut
+      
+      // 保存配置
+      await saveConfig()
+      
+      // 注册新的快捷键
       await invoke('rs_invoke_register_global_shortcut', {
         shortcut: newShortcut
       })
@@ -165,6 +184,13 @@ const recordShortcut = async (e: KeyboardEvent) => {
 const resetToDefault = async () => {
   shortcutKey.value = DEFAULT_SHORTCUT
   currentShortcut.value = DEFAULT_SHORTCUT
+  // 更新 user_config
+  user_config.value.global_shortcut = DEFAULT_SHORTCUT
+  
+  // 保存配置
+  await saveConfig()
+  
+  // 注册默认快捷键
   await invoke('rs_invoke_register_global_shortcut', {
     shortcut: DEFAULT_SHORTCUT
   })
@@ -201,7 +227,7 @@ const stopRecording = () => {
               </label>
               <span>保留纯文本</span>
             </div>
-            <select v-model="config.expired_config.text" :disabled="!keepText">
+            <select v-model="user_config.expired_config.text" :disabled="!keepText">
               <option v-for="option in dayOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
@@ -216,7 +242,7 @@ const stopRecording = () => {
               </label>
               <span>保留图片</span>
             </div>
-            <select v-model="config.expired_config.img" :disabled="!keepImages">
+            <select v-model="user_config.expired_config.img" :disabled="!keepImages">
               <option v-for="option in dayOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
@@ -231,7 +257,7 @@ const stopRecording = () => {
               </label>
               <span>保留文件列表</span>
             </div>
-            <select v-model="config.expired_config.file" :disabled="!keepFileList">
+            <select v-model="user_config.expired_config.file" :disabled="!keepFileList">
               <option v-for="option in dayOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
@@ -248,7 +274,7 @@ const stopRecording = () => {
             <div class="setting-label">
               <span>预览条数</span>
             </div>
-            <input type="number" v-model="config.preview_config.preview_number" min="1" max="100" @input="validateInput"
+            <input type="number" v-model="user_config.preview_config.preview_number" min="1" max="100" @input="validateInput"
               @change="handlePreviewNumberChange" />
           </div>
         </div>

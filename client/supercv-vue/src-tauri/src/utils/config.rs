@@ -1,7 +1,7 @@
-use std::{env, fs};
 use std::io;
 use std::path::PathBuf;
 use std::sync::RwLock;
+use std::{env, fs};
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -48,6 +48,7 @@ pub struct PreviewConfig {
 pub struct UserConfig {
     pub expired_config: ExpiredConfig,
     pub preview_config: PreviewConfig,
+    pub global_shortcut: String,
 }
 
 pub struct Config {
@@ -81,7 +82,7 @@ impl Config {
             files_path,
             logs_path,
             user_config,
-            icon_path
+            icon_path,
         }
     }
 
@@ -116,8 +117,7 @@ impl UserConfig {
 
     // 同步版本的 save
     pub fn save(&self, config_path: &PathBuf) -> io::Result<()> {
-        let content =
-            toml::to_string(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let content = toml::to_string(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         fs::write(&config_path, content)?;
         Ok(())
     }
@@ -126,8 +126,7 @@ impl UserConfig {
     pub async fn save_async(&self, config_path: &PathBuf) -> io::Result<()> {
         use tokio::fs;
 
-        let content =
-            toml::to_string(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        let content = toml::to_string(self).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         fs::write(&config_path, content).await?;
         Ok(())
     }
@@ -137,14 +136,15 @@ fn get_paths() -> (PathBuf, PathBuf) {
     let home = dirs::home_dir().expect("读取用户家目录失败");
 
     // 根据操作系统返回不同的路径
+    #[cfg_attr(rustfmt, rustfmt::skip)]
     match env::consts::OS {
         "macos" | "linux" => (
             home.join(".cache").join("super-cv"),
-            home.join(".config").join("super-cv"),
+            home.join(".config").join("super-cv")
         ),
         "windows" => (
             home.join("Documents").join("super-cv"),
-            home.join(".config").join("super-cv"),
+            home.join(".config").join("super-cv")
         ),
         _ => panic!("Unsupported operating system"),
     }
@@ -153,12 +153,9 @@ fn get_paths() -> (PathBuf, PathBuf) {
 impl Default for UserConfig {
     fn default() -> Self {
         Self {
-            expired_config: ExpiredConfig {
-                text: 7,
-                img: 3,
-                file: 3,
-            },
+            expired_config: ExpiredConfig { text: 7, img: 3, file: 3 },
             preview_config: PreviewConfig { preview_number: 20 },
+            global_shortcut: "CommandOrControl+Shift+C".to_string(),
         }
     }
 }
