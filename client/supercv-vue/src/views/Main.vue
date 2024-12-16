@@ -98,6 +98,14 @@ function handleKeydown(e: KeyboardEvent) {
       selectedIndex.value++
     }
   } else if (e.key === 'Enter' || ((e.metaKey || e.ctrlKey) && e.key === 'c')) {
+    const descWrapper = document.querySelector('.desc-wrapper')
+    const selection = window.getSelection()
+    const isInPreviewArea = selection && descWrapper?.contains(selection.anchorNode)
+
+    if (isInPreviewArea && selection?.toString()) {
+      return
+    }
+
     e.preventDefault()
     if (selectedIndex.value !== -1) {
       if (selectedIndex.value === clipboardEntries.value.length) {
@@ -329,7 +337,7 @@ const hoverSettings = ref(false)
             <span v-if="selectedTimestamp">
               {{ formattedTimestamp }}
             </span>
-            <span v-else> 输入值筛选剪贴板内容 </span>
+            <span v-else> 输入筛选剪贴板内容 </span>
           </p>
         </div>
       </div>
