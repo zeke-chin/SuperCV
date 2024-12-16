@@ -193,6 +193,15 @@ watch(selectedIndex, () => {
 })
 
 onMounted(async () => {
+  // 检查是否是首次运行
+  const isFirstRun = !localStorage.getItem('hasRunBefore')
+  if (isFirstRun) {
+    // 标记已运行
+    localStorage.setItem('hasRunBefore', 'true')
+    // 打开设置页面
+    openSettings()
+  }
+
   await updatePreviewNumber()
   const unlisten = await listen('userConfigChanged', async () => {
     console.log('接收到 userConfigChanged 事件')
