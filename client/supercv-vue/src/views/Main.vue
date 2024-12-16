@@ -193,44 +193,43 @@ watch(selectedIndex, () => {
 })
 
 onMounted(async () => {
-  // 检查是否是首次运行
-  const isFirstRun = !localStorage.getItem('hasRunBefore')
-  if (isFirstRun) {
-    // 标记已运行
-    localStorage.setItem('hasRunBefore', 'true')
-    // 打开设置页面
-    openSettings()
-  }
+  try {
+    // 直接打开设置页面，不检查是否首次运行
+    await invoke('rs_invoke_open_settings')
 
-  await updatePreviewNumber()
-  const unlisten = await listen('userConfigChanged', async () => {
-    console.log('接收到 userConfigChanged 事件')
+    // 其他初始化操作
     await updatePreviewNumber()
-  })
-  document.addEventListener('keydown', handleKeydown)
-  document.addEventListener('mousemove', handleMouseMove)
+    const unlisten = await listen('userConfigChanged', async () => {
+      console.log('接收到 userConfigChanged 事件')
+      await updatePreviewNumber()
+    })
+    document.addEventListener('keydown', handleKeydown)
+    document.addEventListener('mousemove', handleMouseMove)
 
-  window.addEventListener('theme-changed', async () => {
-    await updateTheme()
-  })
+    window.addEventListener('theme-changed', async () => {
+      await updateTheme()
+    })
 
-  await appWindow.onFocusChanged(async ({ payload: focused }) => {
-    if (focused) {
-      textInput.value = ''
-      tempDisplayCount.value = 0
-      await getClipboardContent()
-      inputRef.value?.focus()
-    }
+    await appWindow.onFocusChanged(async ({ payload: focused }) => {
+      if (focused) {
+        textInput.value = ''
+        tempDisplayCount.value = 0
+        await getClipboardContent()
+        inputRef.value?.focus()
+      }
+      updateTheme()
+    })
+
+    inputRef.value?.focus()
+
     updateTheme()
-  })
 
-  inputRef.value?.focus()
-
-  updateTheme()
-
-  onUnmounted(() => {
-    unlisten()
-  })
+    onUnmounted(() => {
+      unlisten()
+    })
+  } catch (error) {
+    console.error('初始化过程出错：', error)
+  }
 })
 
 watch(textInput, () => {
@@ -300,10 +299,11 @@ const hoverSettings = ref(false)
 </script>
 
 <template>
+  <div class="drag-region" data-tauri-drag-region></div>
   <div class="main" :class="{
     'main-dark': theme === 'dark',
     'main-light': theme === 'light',
-  }" data-tauri-drag-region>
+  }">
     <div class="paste-filter">
       <input class="paste-filter-input" ref="inputRef" v-model="textInput" />
     </div>
@@ -367,7 +367,15 @@ const hoverSettings = ref(false)
 </template>
 
 <style>
-/* 主窗口尺寸设置 - 默认宽度100%, 高度100vh */
+.drag-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  z-index: 9999;
+}
+
 .main {
   width: 100%;
   height: 100vh;
