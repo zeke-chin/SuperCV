@@ -46,8 +46,20 @@ jobs:
       if: matrix.config.platform == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf libsoup2.4-dev
-
+        sudo apt-get install -y \
+          libgtk-3-dev \
+          webkit2gtk-4.0 \
+          libappindicator3-dev \
+          librsvg2-dev \
+          patchelf \
+          libsoup2.4-dev \
+          libwebkit2gtk-4.0-dev \
+          libjavascriptcoregtk-4.0-dev \  # 添加这个依赖
+          libglib2.0-dev \                # 可能需要的基础依赖
+          libcairo2-dev \                 # 可能需要的基础依赖
+          libatk1.0-dev \                 # 可能需要的基础依赖
+          libgdk-pixbuf2.0-dev           # 可能需要的基础依赖
+  
     - name: Install dependencies
       run: npm install
 
