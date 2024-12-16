@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::Arc;
 use std::thread::JoinHandle;
 
 use clipboard_rs::{Clipboard, ClipboardContext, ClipboardHandler};
@@ -45,11 +45,7 @@ impl ClipboardHandle {
             runtime,
         }
     }
-    fn process_receiver(
-        receiver: Receiver<PasteboardContent>,
-        db: Arc<Mutex<DatabaseConnection>>,
-        runtime: Arc<Runtime>,
-    ) {
+    fn process_receiver(receiver: Receiver<PasteboardContent>, db: Arc<Mutex<DatabaseConnection>>, runtime: Arc<Runtime>) {
         while let Ok(content) = receiver.recv() {
             // debug!("Received clipboard content: {:?}", content);
             runtime.block_on(async {
@@ -60,9 +56,7 @@ impl ClipboardHandle {
 
     async fn add_clipboard_entry(db: &Arc<Mutex<DatabaseConnection>>, content: PasteboardContent) {
         let db_guard = db.lock().await;
-        time_it!(async add_clipboard_entry(&db_guard, content))
-            .await
-            .unwrap();
+        time_it!(async add_clipboard_entry(&db_guard, content)).await.unwrap();
     }
 }
 
@@ -71,22 +65,29 @@ impl ClipboardHandler for ClipboardHandle {
         let mut content = None;
 
         let mut have_files = false;
+        // if let Ok(img) = self.ctx.get_image() {
+        //     content = self.new_img_content(&img);
+        // }
         match self.ctx.get_files() {
             Ok(file_urls) if !file_urls.is_empty() => {
                 have_files = true;
                 content = self.new_file_content(file_urls);
-            }
-            Ok(_) => {}
+            },
+            Ok(_) => {},
             Err(e) => {
                 #[cfg(target_os = "windows")]
                 {}
 
                 #[cfg(any(target_os = "macos", target_os = "linux"))]
                 {
-                    error!("Error getting files from clipboard: {}", e);
+                    let err_text = e.to_string();
+                    if err_text != "no files" {
+                        error!("Error getting files from clipboard: {}", err_text);
+                    }
                 }
-            }
+            },
         };
+
         if !have_files && content.is_none() {
             if let Ok(img) = self.ctx.get_image() {
                 content = self.new_img_content(&img);
