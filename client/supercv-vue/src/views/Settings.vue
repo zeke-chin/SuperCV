@@ -169,6 +169,16 @@ const resetToDefault = async () => {
     shortcut: DEFAULT_SHORTCUT
   })
 }
+
+const isRecording = ref(false)
+
+const startRecording = () => {
+  isRecording.value = true
+}
+
+const stopRecording = () => {
+  isRecording.value = false
+}
 </script>
 
 <template>
@@ -275,8 +285,11 @@ const resetToDefault = async () => {
               <input 
                 type="text" 
                 v-model="shortcutKey"
-                @keydown.prevent="recordShortcut"
-                :placeholder="currentShortcut || '点击设置快捷键'"
+                :class="{ 'recording': isRecording }"
+                @focus="startRecording"
+                @blur="stopRecording"
+                @keydown="isRecording && recordShortcut($event)"
+                :placeholder="isRecording ? '请按下快捷键组合...' : (currentShortcut || '点击设置快捷键')"
                 readonly
               />
               <button class="reset-btn" @click="resetToDefault">重置</button>
@@ -353,9 +366,11 @@ h3 {
   padding: 10px;
   border-radius: 6px;
   max-width: 550px;
+  gap: 12px;
 }
 
 .setting-label {
+  min-width: 100px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -516,7 +531,7 @@ body {
   color: var(--text-color);
 }
 
-/* 修改亮色主题下的样式 */
+/* 修改亮色题下的样式 */
 :root.light .setting-group {
   background: rgba(200, 200, 200, 0.5);
 }
@@ -583,11 +598,39 @@ body {
 
 input[readonly] {
   background: rgba(61, 61, 61, 0.7);
-  color: #fff;
+  color: #999;
   padding: 8px 12px;
   border: none;
   border-radius: 6px;
   min-width: 200px;
   width: auto;
+  transition: all 0.3s ease;
+}
+
+input[readonly].recording {
+  background: rgba(88, 206, 141, 0.2);
+  color: #fff;
+  border: 1px solid rgba(88, 206, 141, 0.5);
+}
+
+/* 亮色主题样式 */
+:root.light input[readonly] {
+  background: rgba(180, 180, 180, 0.7);
+  color: #666;
+}
+
+:root.light input[readonly].recording {
+  background: rgba(88, 206, 141, 0.1);
+  color: #000;
+  border: 1px solid rgba(88, 206, 141, 0.5);
+}
+
+:root.light .reset-btn {
+  background: rgba(180, 180, 180, 0.7);
+  color: #333;
+}
+
+:root.light .reset-btn:hover {
+  background: rgba(180, 180, 180, 0.9);
 }
 </style>
