@@ -20,9 +20,7 @@ impl MainGlobalShortcut {
 
 		// 如果有之前的快捷键，先注销它
 		if let Some(old_shortcut) = current_shortcut.as_ref() {
-			shortcut_manager
-				.unregister(old_shortcut)
-				.map_err(|e| e.to_string())?;
+			shortcut_manager.unregister(old_shortcut).map_err(|e| e.to_string())?;
 		}
 
 		// 注册新的快捷键
@@ -57,3 +55,15 @@ pub fn rs_invoke_register_global_shortcut(
 ) -> Result<bool, String> {
 	state.register(&app_handle, &shortcut)
 }
+
+// #[tauri::command]
+// pub fn rs_invoke_register_global_shortcut(app_handle: tauri::AppHandle, shortcut: &str) -> Result<(), String> {
+// 	let main_window = app_handle.get_window("main").unwrap();
+// 	let main_global_shortcut = MainGlobalShortcut::new(main_window);
+
+// 	// 先注销原有快捷键
+// 	app_handle.global_shortcut_manager().unregister_all().map_err(|e| e.to_string())?;
+
+// 	// 注册新快捷键
+// 	main_global_shortcut.register(&app_handle, shortcut).map_err(|e| e.to_string())
+// }

@@ -124,6 +124,51 @@ const validateInput = (event: Event) => {
   // 更新输入值
   config.value.preview_config.preview_number = value
 }
+
+const DEFAULT_SHORTCUT = navigator.platform.includes('Mac') 
+  ? 'Command+Shift+C' 
+  : 'Control+Shift+C'
+const shortcutKey = ref('')
+const currentShortcut = ref(DEFAULT_SHORTCUT)
+
+const recordShortcut = async (e: KeyboardEvent) => {
+  e.preventDefault()
+  
+  const modifiers = []
+  if (e.ctrlKey) modifiers.push('Control')
+  if (e.metaKey) modifiers.push('Command')
+  if (e.shiftKey) modifiers.push('Shift')
+  if (e.altKey) modifiers.push('Alt')
+  
+  const key = e.code.replace('Key', '').replace('Digit', '')
+  if (!['CONTROL','SHIFT','ALT','META'].includes(key)) {
+    let newShortcut = [...modifiers, key].join('+')
+    if (navigator.platform.includes('Mac')) {
+      newShortcut = newShortcut.replace('CommandOrControl', 'Command')
+    } else {
+      newShortcut = newShortcut.replace('CommandOrControl', 'Control')
+    }
+    
+    shortcutKey.value = newShortcut
+    currentShortcut.value = newShortcut
+    
+    try {
+      await invoke('rs_invoke_register_global_shortcut', {
+        shortcut: newShortcut
+      })
+    } catch (err) {
+      console.error('设置快捷键失败:', err)
+    }
+  }
+}
+
+const resetToDefault = async () => {
+  shortcutKey.value = DEFAULT_SHORTCUT
+  currentShortcut.value = DEFAULT_SHORTCUT
+  await invoke('rs_invoke_register_global_shortcut', {
+    shortcut: DEFAULT_SHORTCUT
+  })
+}
 </script>
 
 <template>
@@ -216,6 +261,28 @@ const validateInput = (event: Event) => {
               <span>跟随系统</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>快捷键设置：</h3>
+        <div class="setting-group">
+          <div class="setting-item">
+            <div class="setting-label">
+              <span>显示/隐藏窗口</span>
+            </div>
+            <div class="shortcut-input-group">
+              <input 
+                type="text" 
+                v-model="shortcutKey"
+                @keydown.prevent="recordShortcut"
+                :placeholder="currentShortcut || '点击设置快捷键'"
+                readonly
+              />
+              <button class="reset-btn" @click="resetToDefault">重置</button>
+            </div>
+          </div>
+          <div class="hint-text">默认快捷键: CommandOrControl+Shift+C</div>
         </div>
       </div>
     </div>
@@ -492,5 +559,35 @@ body {
 
 .settings::-webkit-scrollbar-thumb:hover {
   background: rgba(88, 206, 141, 0.7);
+}
+
+.shortcut-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+}
+
+.reset-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(61, 61, 61, 0.7);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: rgba(61, 61, 61, 0.9);
+}
+
+input[readonly] {
+  background: rgba(61, 61, 61, 0.7);
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  min-width: 200px;
+  width: auto;
 }
 </style>
