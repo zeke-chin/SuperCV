@@ -305,7 +305,7 @@ const hoverSettings = ref(false)
             {{ item.content }}
           </div>
         </div>
-        <div class="paste-content-item" :class="{
+        <div v-if="clipboardEntries.length > 0 && !textInput.trim()" class="paste-content-item" :class="{
           'paste-content-item-selected': selectedIndex === clipboardEntries.length,
         }" @mouseover="() => { selectedIndex = clipboardEntries.length }" @click="handleLoadMore">
           <div class="paste-item-icon">
