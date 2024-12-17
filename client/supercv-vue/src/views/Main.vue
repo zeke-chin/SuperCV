@@ -200,8 +200,14 @@ watch(selectedIndex, () => {
 
 onMounted(async () => {
   try {
-    // 打开设置页面
-    await invoke('rs_invoke_open_settings')
+    // 检查 localStorage 中的设置
+    const showSettingsOnLaunch = localStorage.getItem('showSettingsOnLaunch') !== 'false'
+    
+    // 根据设置决定是否打开设置页面
+    if (showSettingsOnLaunch) {
+      await invoke('rs_invoke_open_settings')
+    }
+    
     // 立即隐藏主窗口
     await appWindow.hide()
 
@@ -626,7 +632,7 @@ const truncateText = computed(() => (text: string) => {
   width: 30px;
 }
 
-/* 修改输入框样式 */
+/* ��改输入框样式 */
 .main-light .paste-filter-input {
   background: rgba(255, 255, 255, 0.3);
   color: #000;

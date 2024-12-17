@@ -205,6 +205,12 @@ const startRecording = () => {
 const stopRecording = () => {
   isRecording.value = false
 }
+
+const showSettingsOnLaunch = ref(localStorage.getItem('showSettingsOnLaunch') !== 'false') // 默认为 true
+
+const handleSettingsLaunchChange = (value: boolean) => {
+  localStorage.setItem('showSettingsOnLaunch', value.toString())
+}
 </script>
 
 <template>
@@ -322,6 +328,25 @@ const stopRecording = () => {
             </div>
           </div>
           <div class="hint-text">默认快捷键: CommandOrControl+Shift+C</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>启动设置：</h3>
+        <div class="setting-group">
+          <div class="setting-item">
+            <div class="setting-label">
+              <label class="switch">
+                <input 
+                  type="checkbox" 
+                  v-model="showSettingsOnLaunch"
+                  @change="handleSettingsLaunchChange(showSettingsOnLaunch)" 
+                />
+                <span class="slider"></span>
+              </label>
+              <span>启动时显示设置页面</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
