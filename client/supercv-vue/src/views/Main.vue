@@ -81,13 +81,8 @@ async function searchClipboard() {
 
 async function copyToClipboardAndHide(item: ClipboardEntry) {
   try {
-    if (item.type == 0) {
-      await navigator.clipboard.writeText(item.content)
-      console.log('使用navigator set clipboard')
-    } else {
-      await ClipboardHelper.setClipboardEntriy(item)
-      console.log('使用rust set clipboard')
-    }
+    await ClipboardHelper.setClipboardEntriy(item)
+    console.log('使用rust set clipboard')
     await appWindow.hide()
   } catch (err) {
     console.error('Failed to copy text or hide window: ', err)
@@ -337,11 +332,11 @@ const truncateText = computed(() => (text: string) => {
 
   // 4. Measure the width of the prefix and bracket content
   testElement.textContent = `${prefix}${bracketContent}`;
-  const prefixBracketWidth = testElement.offsetWidth;
+  // const prefixBracketWidth = testElement.offsetWidth;
 
   // 5. Calculate the available width for the filename
   const containerWidth = container.clientWidth;
-  const availableWidth = containerWidth - prefixBracketWidth;
+  // const availableWidth = containerWidth - prefixBracketWidth;
 
   // 6. Check if the entire text fits without truncation
   testElement.textContent = text;
