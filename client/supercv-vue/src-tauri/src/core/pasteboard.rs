@@ -85,9 +85,12 @@ impl ClipboardHandle {
         }
 
         let (text_content, content_type, path) = if file_urls.len() == 1 {
-            // let url = Url::parse(&file_urls[0]).expect("Invalid URL");
-            // let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
-            // let path = PathBuf::from(decoded_path.as_ref());
+            #[cfg(target_os = "linux")]
+            let url = Url::parse(&file_urls[0]).expect("Invalid URL");
+            let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+            let path = PathBuf::from(decoded_path.as_ref());
+
+            #[cfg(any(target_os = "macos", target_os = "windows"))]
             let path = PathBuf::from(&file_urls[0]);
 
             // let path = url.path();
@@ -121,10 +124,13 @@ impl ClipboardHandle {
             let paths: Vec<PathBuf> = file_urls
                 .iter()
                 .map(|url| {
-                    PathBuf::from(url)
-                    // let url = Url::parse(url).expect("Invalid URL");
-                    // let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
-                    // PathBuf::from(decoded_path.as_ref())
+                    #[cfg(any(target_os = "macos", target_os = "windows"))]
+                    return PathBuf::from(url);
+
+                    #[cfg(target_os = "linux")]
+                    let url = Url::parse(url).expect("Invalid URL");
+                    let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+                    return PathBuf::from(decoded_path.as_ref());
                 })
                 .collect();
             let file_names: String = paths
