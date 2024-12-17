@@ -21,7 +21,13 @@ const displayContent = computed(() => {
   if (selectedIndex.value >= 0 && selectedIndex.value < clipboardEntries.value.length) {
     const item = clipboardEntries.value[selectedIndex.value]
     if (item.type == 2) {
-      return item.path.replaceAll(', ', '\n')
+      try {
+        const paths = JSON.parse(item.path)
+        return paths.join('\n')
+      } catch (e) {
+        console.error('Failed to parse path:', e)
+        return item.path
+      }
     }
     return item.content
   }
@@ -194,8 +200,10 @@ watch(selectedIndex, () => {
 
 onMounted(async () => {
   try {
-    // 直接打开设置页面，不检查是否首次运行
+    // 打开设置页面
     await invoke('rs_invoke_open_settings')
+    // 立即隐藏主窗口
+    await appWindow.hide()
 
     // 其他初始化操作
     await updatePreviewNumber()
@@ -296,6 +304,80 @@ const handleSelectPasteItem = (index: number, item: any) => {
 }
 
 const hoverSettings = ref(false)
+const truncateText = computed(() => (text: string) => {
+  // 1. Get the container element
+  const container = document.querySelector('.paste-item-text');
+  if (!container) return text;
+
+  // 2. Create a temporary element for width measurement
+  const testElement = document.createElement('span');
+  testElement.style.visibility = 'hidden';
+  testElement.style.position = 'absolute';
+  testElement.style.whiteSpace = 'nowrap';
+  testElement.style.font = window.getComputedStyle(container).font;
+  document.body.appendChild(testElement);
+
+  // 3. Extract prefix, filename, and bracket content
+  const prefixMatch = text.match(/^((?:Img|Files):\s)/);
+  const prefix = prefixMatch ? prefixMatch[0] : '';
+
+  const bracketMatch = text.match(/\([^)]+\)$/);
+  const bracketContent = bracketMatch ? bracketMatch[0] : '';
+
+  const fileName = text
+    .slice(prefix.length)
+    .replace(/\s*\([^)]+\)$/, '');
+
+  // 4. Measure the width of the prefix and bracket content
+  testElement.textContent = `${prefix}${bracketContent}`;
+  const prefixBracketWidth = testElement.offsetWidth;
+
+  // 5. Calculate the available width for the filename
+  const containerWidth = container.clientWidth;
+  const availableWidth = containerWidth - prefixBracketWidth;
+
+  // 6. Check if the entire text fits without truncation
+  testElement.textContent = text;
+  if (testElement.offsetWidth <= containerWidth) {
+    document.body.removeChild(testElement);
+    return text;
+  }
+
+  // 7. Define a minimum length for the beginning part
+  const minStartLength = 5; // You can adjust this value
+
+  // 8. Calculate the maximum length for the end part
+    let bestLeft = minStartLength;
+    let endLength = 0;
+    for (let i = fileName.length - 1; i >= 0; i--) {
+      const truncatedFileName = `${fileName.slice(0, bestLeft)}...${fileName.slice(i)}`;
+      testElement.textContent = `${prefix}${truncatedFileName}${bracketContent}`;
+      if (testElement.offsetWidth <= containerWidth) {
+        endLength = fileName.length - i;
+      } else {
+        if(endLength > 0){
+            break;
+        }
+        
+        for(let j = bestLeft + 1; j < fileName.length; j++){
+            const truncatedFileName = `${fileName.slice(0, j)}...${fileName.slice(i)}`;
+            testElement.textContent = `${prefix}${truncatedFileName}${bracketContent}`;
+            if (testElement.offsetWidth <= containerWidth) {
+                bestLeft = j
+            }else{
+                break;
+            }
+        }
+      }
+    }
+
+  // 9. Construct the final truncated string
+  const result = `${prefix}${fileName.slice(0, bestLeft)}...${fileName.slice(fileName.length - endLength)}${bracketContent}`;
+
+  // 10. Clean up and return the result
+  document.body.removeChild(testElement);
+  return result;
+});
 </script>
 
 <template>
@@ -319,7 +401,7 @@ const hoverSettings = ref(false)
             {{ pasteItemIcon(item.type) }}
           </div>
           <div class="paste-item-text">
-            {{ item.content }}
+            {{ truncateText(item.content) }}
           </div>
         </div>
         <div v-if="clipboardEntries.length > 0 && !textInput.trim()" class="paste-content-item" :class="{
@@ -479,7 +561,7 @@ const hoverSettings = ref(false)
   display: block;
   /* 设置 img 为块级元素 */
   margin: auto;
-  /* 自动外距实现水平居中 */
+  /* 自动外距实现水平中 */
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

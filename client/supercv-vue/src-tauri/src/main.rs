@@ -45,7 +45,7 @@ async fn main() {
             // apply_blur(&main_window, None).expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             #[cfg(target_os = "windows")]
             main_window.set_decorations(false).unwrap();
-            
+
             let main_handle = main_window.clone();
             main_handle.set_decorations(false).unwrap();
             let settings_window = app.get_window("settings").unwrap();
@@ -59,14 +59,16 @@ async fn main() {
 
             // 添加失去焦点事件处理
             let window_handle = main_window.clone();
-            main_window.on_window_event(move |event| {
-                match event {
-                    // 只在真正需要隐藏窗口的时候处理事件
-                    tauri::WindowEvent::CloseRequested { .. } => {
+            main_window.on_window_event(move |event| match event {
+                tauri::WindowEvent::CloseRequested { .. } => {
+                    window_handle.hide().unwrap();
+                },
+                tauri::WindowEvent::Focused(focused) => {
+                    if !focused {
                         window_handle.hide().unwrap();
                     }
-                    _ => {}
-                }
+                },
+                _ => {},
             });
 
             let settings_handle = settings_window.clone();
