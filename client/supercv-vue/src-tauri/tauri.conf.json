@@ -56,7 +56,8 @@
         },
         "systemTray": {
             "iconPath": "icons/icon.ico",
-            "iconAsTemplate": false
+            "iconAsTemplate": false,
+            "menuOnLeftClick": true
         },
         "windows": [
             {
