@@ -219,10 +219,11 @@ onMounted(async () => {
     })
 
     await appWindow.onFocusChanged(async ({ payload: focused }) => {
-      if (focused && !document.hasFocus()) {
+      if (focused) {
         textInput.value = ''
         tempDisplayCount.value = 0
         await getClipboardContent()
+        selectedIndex.value = 0
         inputRef.value?.focus()
       }
       updateTheme()
