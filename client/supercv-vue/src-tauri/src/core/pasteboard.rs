@@ -88,7 +88,7 @@ impl ClipboardHandle {
             // let url = Url::parse(&file_urls[0]).expect("Invalid URL");
             // let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
             // let path = PathBuf::from(decoded_path.as_ref());
-            let path = PathBuf::from(file_urls[0].clone());
+            let path = PathBuf::from(&file_urls[0]);
 
             // let path = url.path();
             let file_name = path.file_name()?.to_str()?;
@@ -121,9 +121,10 @@ impl ClipboardHandle {
             let paths: Vec<PathBuf> = file_urls
                 .iter()
                 .map(|url| {
-                    let url = Url::parse(url).expect("Invalid URL");
-                    let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
-                    PathBuf::from(decoded_path.as_ref())
+                    PathBuf::from(url)
+                    // let url = Url::parse(url).expect("Invalid URL");
+                    // let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+                    // PathBuf::from(decoded_path.as_ref())
                 })
                 .collect();
             let file_names: String = paths
