@@ -9,6 +9,7 @@ use clipboard_rs::common::RustImage;
 use clipboard_rs::RustImageData;
 use log::debug;
 use serde_json::json;
+#[cfg(target_os = "linux")]
 use url::Url;
 
 use crate::core::clipboard::ClipboardHandle;
@@ -86,9 +87,11 @@ impl ClipboardHandle {
 
         let (text_content, content_type, path) = if file_urls.len() == 1 {
             #[cfg(target_os = "linux")]
-            let url = Url::parse(&file_urls[0]).expect("Invalid URL");
-            let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
-            let path = PathBuf::from(decoded_path.as_ref());
+            {
+                let url = Url::parse(&file_urls[0]).expect("Invalid URL");
+                let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+                let path = PathBuf::from(decoded_path.as_ref());
+            }
 
             #[cfg(any(target_os = "macos", target_os = "windows"))]
             let path = PathBuf::from(&file_urls[0]);
@@ -128,9 +131,11 @@ impl ClipboardHandle {
                     return PathBuf::from(url);
 
                     #[cfg(target_os = "linux")]
-                    let url = Url::parse(url).expect("Invalid URL");
-                    let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
-                    return PathBuf::from(decoded_path.as_ref());
+                    {
+                        let url = Url::parse(url).expect("Invalid URL");
+                        let decoded_path = urlencoding::decode(url.path()).expect("UTF-8");
+                        return PathBuf::from(decoded_path.as_ref());
+                    }
                 })
                 .collect();
             let file_names: String = paths
