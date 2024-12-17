@@ -1,6 +1,6 @@
 [package]
 name = "supercv-vue"
-version = "0.1.1"
+version = "0.1.2"
 description = "Clipboard Enhancement Tools"
 authors = ["zeke-chin", "N1body"]
 edition = "2021"
