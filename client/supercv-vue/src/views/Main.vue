@@ -136,13 +136,17 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const theme: Ref<Theme> = ref('light')
 
 const updateTheme = async () => {
-  const savedTheme = localStorage.getItem('theme') || 'system'
-  const themeValue = savedTheme === 'system'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : savedTheme as 'light' | 'dark'
-
-  // console.log('Current theme:', themeValue)
-  theme.value = themeValue
+  try {
+    const config = await UserConfig.getUserConfig()
+    theme.value = config.theme
+  } catch (error) {
+    console.error('Failed to get theme from config:', error)
+    // 回退到本地存储的主题
+    const savedTheme = localStorage.getItem('theme') || 'system'
+    theme.value = savedTheme === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : savedTheme as 'light' | 'dark'
+  }
 }
 
 async function updatePreviewNumber() {
@@ -215,6 +219,7 @@ onMounted(async () => {
     document.addEventListener('keydown', handleKeydown)
     document.addEventListener('mousemove', handleMouseMove)
 
+    // 监听主题变化
     window.addEventListener('theme-changed', async () => {
       await updateTheme()
     })
@@ -226,13 +231,14 @@ onMounted(async () => {
         await getClipboardContent()
         selectedIndex.value = 0
         inputRef.value?.focus()
+        await updateTheme() // 在获得焦点时更新主题
       }
-      updateTheme()
     })
 
     inputRef.value?.focus()
 
-    updateTheme()
+    // 初始化主题
+    await updateTheme()
 
     onUnmounted(() => {
       unlisten()

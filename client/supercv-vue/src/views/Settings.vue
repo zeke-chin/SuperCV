@@ -13,7 +13,8 @@ const user_config = ref<UserConfig>({
   preview_config: {
     preview_number: 10,
   },
-  global_shortcut: ''
+  global_shortcut: '',
+  theme: 'system'
 })
 onMounted(async () => {
   try {
@@ -23,6 +24,11 @@ onMounted(async () => {
     keepText.value = user_config.value.expired_config.text > 0
     keepImages.value = user_config.value.expired_config.img > 0
     keepFileList.value = user_config.value.expired_config.file > 0
+    
+    // 使用配置中的主题
+    const savedTheme = localStorage.getItem('theme') || 'system'
+    themeMode.value = savedTheme
+    handleThemeChange(savedTheme)
   } catch (error) {
     console.error('获取用户配置失败:', error)
     // 如果获取失败,保持默认值
@@ -70,11 +76,14 @@ const handleThemeChange = async (mode: string) => {
       break
   }
 
-  // await invoke('set_theme', { theme: actualTheme })
+  // 更新用户配置中的主题
+  if (user_config.value) {
+    user_config.value.theme = actualTheme
+    await saveConfig()
+  }
+  
   window.dispatchEvent(new Event('theme-changed'))
 }
-
-
 
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme') || 'system'

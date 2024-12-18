@@ -49,6 +49,7 @@ pub struct UserConfig {
     pub expired_config: ExpiredConfig,
     pub preview_config: PreviewConfig,
     pub global_shortcut: String,
+    pub theme: String,
 }
 
 pub struct Config {
@@ -156,6 +157,7 @@ impl Default for UserConfig {
             expired_config: ExpiredConfig { text: 7, img: 3, file: 3 },
             preview_config: PreviewConfig { preview_number: 20 },
             global_shortcut: "CommandOrControl+Shift+C".to_string(),
+            theme: "system".to_string(),
         }
     }
 }

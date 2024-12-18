@@ -22,6 +22,7 @@ export interface UserConfig {
   expired_config: ExpiredConfig
   preview_config: PreviewConfig
   global_shortcut: string
+  theme: string
 }
 
 export class ClipboardHelper {
