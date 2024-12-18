@@ -1,13 +1,12 @@
 use std::sync::Mutex;
 use tauri::{AppHandle, GlobalShortcutManager, Window};
 
-use std::sync::Arc;
 #[cfg(target_os = "linux")]
-use x11rb::protocol::xproto::Screen;
-#[cfg(target_os = "linux")]
-use x11rb::rust_connection::RustConnection;
-
-use crate::utils;
+use {
+    crate::utils,
+    std::sync::Arc,
+    x11rb::{protocol::xproto::Screen, rust_connection::RustConnection},
+};
 pub struct MainGlobalShortcut {
     shortcut: Mutex<Option<String>>,
     window: Window,

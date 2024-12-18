@@ -13,11 +13,9 @@ use crate::clipboard_helper::{
 };
 use crate::shortcut::{rs_invoke_register_global_shortcut, MainGlobalShortcut};
 use std::env;
-use x11rb::connection::Connection;
-// use x11rb::protocol::xproto::*;
-// use x11rb::protocol::Event;
-use x11rb::rust_connection::RustConnection;
-// use x11rb::NONE;
+
+#[cfg(target_os = "linux")]
+use x11rb::{connection::Connection, rust_connection::RustConnection};
 
 mod api;
 mod clipboard_helper;
