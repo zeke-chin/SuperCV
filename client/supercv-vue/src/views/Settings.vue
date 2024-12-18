@@ -70,7 +70,7 @@ const handleThemeChange = async (mode: string) => {
       break
   }
 
-  await invoke('set_theme', { theme: actualTheme })
+  // await invoke('set_theme', { theme: actualTheme })
   window.dispatchEvent(new Event('theme-changed'))
 }
 

@@ -548,9 +548,6 @@ const truncateText = computed(() => (text: string) => {
   height: 0;
   flex-shrink: 0;
   overflow-y: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .desc-wrapper pre {
@@ -563,10 +560,11 @@ const truncateText = computed(() => (text: string) => {
 }
 
 .desc-wrapper img {
-  display: block;
-  margin: auto;
-  max-width: 100%;
-  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
