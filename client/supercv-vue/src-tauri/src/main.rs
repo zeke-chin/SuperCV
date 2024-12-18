@@ -12,6 +12,12 @@ use crate::clipboard_helper::{
     rs_invoke_set_user_config, ClipboardHelper,
 };
 use crate::shortcut::{rs_invoke_register_global_shortcut, MainGlobalShortcut};
+use std::env;
+use x11rb::connection::Connection;
+// use x11rb::protocol::xproto::*;
+// use x11rb::protocol::Event;
+use x11rb::rust_connection::RustConnection;
+// use x11rb::NONE;
 
 mod api;
 mod clipboard_helper;
@@ -46,6 +52,7 @@ async fn main() {
             #[cfg(target_os = "windows")]
             main_window.set_decorations(false).unwrap();
 
+            main_window.set_skip_taskbar(true).unwrap(); // 去除linux 唤出通知
             let main_handle = main_window.clone();
             main_handle.set_decorations(false).unwrap();
             let settings_window = app.get_window("settings").unwrap();
@@ -53,7 +60,17 @@ async fn main() {
 
             // 注册全局快捷键
             let main_handle: tauri::Window = main_window.clone();
-            let main_global_shortcut = MainGlobalShortcut::new(main_handle);
+            let mut main_global_shortcut = MainGlobalShortcut::new(main_handle);
+            #[cfg(target_os = "linux")]
+            {
+                let (x11_conn, x11_screen_num) = RustConnection::connect(None).unwrap();
+                let x11_conn = Arc::new(x11_conn);
+                let x11_screen = x11_conn.setup().roots[x11_screen_num].clone();
+
+                let x11_conn_clone = Arc::clone(&x11_conn);
+                let x11_screen_clone = x11_screen.clone();
+                main_global_shortcut.set_x11(x11_conn_clone, x11_screen_clone);
+            }
             main_global_shortcut.register(&app_handle, "CommandOrControl+Shift+C")?;
             app.manage(main_global_shortcut);
 

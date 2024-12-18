@@ -69,7 +69,6 @@
                 "acceptFirstMouse": true,
                 "hiddenTitle": true,
                 "title": "SuperCV",
-                "alwaysOnTop": true,
                 "focus": true,
                 "width": 750,
                 "height": 455
