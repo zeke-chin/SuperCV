@@ -138,7 +138,9 @@ const theme: Ref<Theme> = ref('light')
 const updateTheme = async () => {
   try {
     const config = await UserConfig.getUserConfig()
-    theme.value = config.theme
+    theme.value = config.theme === 'system' 
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : config.theme as Theme
   } catch (error) {
     console.error('Failed to get theme from config:', error)
     // 回退到本地存储的主题
