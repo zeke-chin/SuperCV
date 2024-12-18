@@ -548,6 +548,9 @@ const truncateText = computed(() => (text: string) => {
   height: 0;
   flex-shrink: 0;
   overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .desc-wrapper pre {
@@ -561,14 +564,10 @@ const truncateText = computed(() => (text: string) => {
 
 .desc-wrapper img {
   display: block;
-  /* 设置 img 为块级元素 */
   margin: auto;
-  /* 自动外距实现水平中 */
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  /* 垂直居中（如果父元素是 flex 或 grid 容器） */
-  align-self: center;
 }
 
 .timestamp-wrapper {
@@ -627,7 +626,7 @@ const truncateText = computed(() => (text: string) => {
   width: 30px;
 }
 
-/* ��改输入框样式 */
+/* 改输入框样式 */
 .main-light .paste-filter-input {
   background: rgba(255, 255, 255, 0.3);
   color: #000;
